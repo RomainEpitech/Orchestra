@@ -1,0 +1,42 @@
+.PHONY: up down build clean migrate
+
+# Variables
+DC=docker compose
+
+# Couleurs pour le terminal
+CYAN=\033[0;36m
+NC=\033[0m # No Color
+
+help: ## Affiche l'aide
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-30s$(NC) %s\n", $$1, $$2}'
+
+up: ## Démarre les conteneurs et initialise l'application
+	@echo "🚀 Démarrage de l'application Orchestra..."
+	$(DC) up -d
+	@echo "⏳ Attente du démarrage de la base de données..."
+	sleep 5
+	@echo "🔄 Exécution des migrations..."
+	$(DC) exec backend php artisan migrate
+	@echo "✅ Application démarrée sur http://localhost:8080"
+	@echo "📊 phpMyAdmin disponible sur http://localhost:8081"
+
+build: ## Construit les images et exécute les migrations sans déployer
+	@echo "🏗️  Construction des images..."
+	$(DC) build --no-cache
+	@echo "🔄 Exécution des migrations..."
+	$(DC) run --rm backend php artisan migrate
+	@echo "✅ Build terminé avec succès"
+
+down: ## Arrête et supprime les conteneurs
+	@echo "🛑 Arrêt de l'application..."
+	$(DC) down
+	@echo "✅ Application arrêtée"
+
+migrate: ## Exécute les migrations
+	@echo "🔄 Exécution des migrations..."
+	$(DC) exec backend php artisan migrate
+
+clean: ## Clean images et volumes
+	docker-compose down -v
+	docker system prune -f
+	sh ./bin/Clean-docker.sh
