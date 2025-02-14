@@ -1,4 +1,4 @@
-.PHONY: up down build clean migrate
+.PHONY: up down build clean migrate backup
 
 # Variables
 DC=docker compose
@@ -36,7 +36,16 @@ migrate: ## Exécute les migrations
 	@echo "🔄 Exécution des migrations..."
 	$(DC) exec backend php artisan migrate
 
-clean: ## Clean images et volumes
-	docker-compose down -v
-	docker system prune -f
-	sh ./bin/Clean-docker.sh
+clean: ## Nettoie l'environnement Docker et les backups
+	@printf "\n🧹 Nettoyage complet de l'environnement...\n"
+	@$(DC) down -v
+	@docker system prune -f
+	@sh ./bin/Clean-docker.sh
+	@sh ./bin/Clean-backup.sh
+
+clean-backup: ## Nettoie uniquement les backups MySQL
+	@printf "\n🗑️  Nettoyage des backups...\n"
+	@sh ./bin/Clean-backup.sh
+
+backup: ## MySQL DB Backup
+	docker-compose exec -T backup sh -c "cd /opt/backup && ./backup.sh"

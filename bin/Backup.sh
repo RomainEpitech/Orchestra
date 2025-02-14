@@ -1,6 +1,42 @@
 #!/bin/sh
 
-# Création du répertoire de backup s'il n'existe pas
+# Active l'interprétation des séquences d'échappement
+export TERM=xterm-color
+
+# Couleurs et styles
+RED='\e[31m'
+GREEN='\e[32m'
+YELLOW='\e[33m'
+BLUE='\e[34m'
+CYAN='\e[36m'
+NC='\e[0m'
+BOLD='\e[1m'
+
+# Fonction pour les séparateurs
+print_separator() {
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+# Fonction pour les messages d'information
+info() {
+    echo -e "${CYAN}[INFO]${NC} $1"
+}
+
+# Fonction pour les succès
+success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+# Fonction pour les erreurs
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Fonction pour les avertissements
+warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
 mkdir -p /backups
 
 # Configuration
@@ -13,44 +49,64 @@ USER=${DB_USERNAME}
 
 # Fonction de backup
 perform_backup() {
-    echo "Starting backup of ${DATABASE} database..."
+    print_separator
+    info "Starting backup process for database: ${BOLD}${DATABASE}${NC}"
+    print_separator
     
-    # Utilisation de --protocol=tcp et --enable-cleartext-plugin pour la compatibilité
-    mysqldump --protocol=tcp --column-statistics=0 --host=${HOST} --user=${USER} --password=${DB_PASSWORD} ${DATABASE} 2>/dev/null | gzip > ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz
+    info "Creating backup..."
+    mysqldump --protocol=tcp --column-statistics=0 --host=${HOST} \
+                --user=${USER} --password=${DB_PASSWORD} ${DATABASE} 2>/dev/null | \
+                gzip > ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz
     
     if [ -s "${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz" ]; then
-        echo "Database backup successfully completed for ${DATABASE}"
-        echo "Backup saved as: ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz"
-        echo "Backup size: $(ls -lh ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz | awk '{print $5}')"
+        print_separator
+        success "Backup completed successfully!"
+        info "📁 Backup location: ${BOLD}${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz${NC}"
+        info "📦 Backup size: ${BOLD}$(ls -lh ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz | awk '{print $5}')${NC}"
     else
-        echo "Error: Backup file is empty or backup failed for ${DATABASE}"
+        error "Backup file is empty or backup failed"
         rm -f "${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz"
+        print_separator
         exit 1
     fi
     
     # Nettoyage des vieux backups
+    info "Cleaning up old backups (older than ${KEEP_DAYS} days)..."
     find ${BACKUP_DIR} -type f -name "*.sql.gz" -mtime +${KEEP_DAYS} -delete
-    echo "Old backups cleaned up"
+    success "Cleanup completed"
     
     # Afficher la liste des backups disponibles
-    echo "Available backups:"
-    ls -lh ${BACKUP_DIR}
+    print_separator
+    echo -e "${CYAN}${BOLD}Available Backups:${NC}"
+    printf "${YELLOW}\n"
+    find ${BACKUP_DIR} -name "*.sql.gz" -type f -exec ls -lh {} \; | \
+        awk '{print $5, $9}' | while read size file; do
+            filename=$(basename "$file")
+            printf "├─ 📦 %-8s %s\n" "$size" "$filename"
+        done
+    printf "${NC}\n"
+    print_separator
 }
 
 # Si le script est exécuté avec l'argument --cron, configure et démarre le cron
 if [ "$1" = "--cron" ]; then
+    info "Setting up cron job..."
+    
     # Installation de crond et autres utilitaires nécessaires
     apk add --no-cache dcron mysql-client
-
+    
     # Création du dossier pour les logs
     mkdir -p /var/log
     touch /var/log/cron.log
-
+    
     # Configuration du cron
     mkdir -p /etc/cron.d
     echo "${BACKUP_FREQUENCY} /opt/backup/backup.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/backup-cron
     chmod 0644 /etc/cron.d/backup-cron
-
+    
+    success "Cron job configured with schedule: ${BOLD}${BACKUP_FREQUENCY}${NC}"
+    info "Starting cron daemon..."
+    
     # Démarrage du cron daemon
     crond -f -d 8
 else
