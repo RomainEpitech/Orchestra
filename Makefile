@@ -8,7 +8,10 @@ CYAN=\033[0;36m
 NC=\033[0m # No Color
 
 help: ## Affiche l'aide
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-30s$(NC) %s\n", $$1, $$2}'
+	@printf "\n📚 Orchestra - Liste des commandes disponibles:\n"
+	@printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
+	@printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
 
 up: ## Démarre les conteneurs et initialise l'application
 	@echo "🚀 Démarrage de l'application Orchestra..."
@@ -49,3 +52,6 @@ clean-backup: ## Nettoie uniquement les backups MySQL
 
 backup: ## MySQL DB Backup
 	docker-compose exec -T backup sh -c "cd /opt/backup && ./backup.sh"
+
+restore: ## MySQL DB Restore
+	$(DC) exec -T backup sh -c "cd /opt/backup && chmod +x Restore.sh && ./Restore.sh"

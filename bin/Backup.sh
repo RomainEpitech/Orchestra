@@ -53,19 +53,59 @@ perform_backup() {
     info "Starting backup process for database: ${BOLD}${DATABASE}${NC}"
     print_separator
     
-    info "Creating backup..."
-    mysqldump --protocol=tcp --column-statistics=0 --host=${HOST} \
-                --user=${USER} --password=${DB_PASSWORD} ${DATABASE} 2>/dev/null | \
-                gzip > ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz
+    # Vérification de la connexion et des tables
+    info "Vérification des tables dans la base de données..."
+    TABLES_COUNT=$(mysql --protocol=tcp \
+        --host=${HOST} \
+        --user=${USER} \
+        --password=${DB_PASSWORD} \
+        --database=${DATABASE} \
+        -N -e "SHOW TABLES;" | wc -l)
     
-    if [ -s "${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz" ]; then
+    info "${TABLES_COUNT} tables trouvées"
+
+    # Vérification du nombre de lignes dans les tables
+    info "Vérification du contenu des tables..."
+    mysql --protocol=tcp \
+        --host=${HOST} \
+        --user=${USER} \
+        --password=${DB_PASSWORD} \
+        --database=${DATABASE} \
+        -e "SELECT TABLE_NAME, TABLE_ROWS FROM information_schema.tables WHERE TABLE_SCHEMA='${DATABASE}';" 2>&1
+    
+    info "Creating backup..."
+    BACKUP_FILE="${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz"
+    
+    mysqldump --protocol=tcp \
+            --complete-insert \
+            --add-drop-table \
+            --create-options \
+            --disable-keys \
+            --extended-insert=FALSE \
+            --skip-comments \
+            --skip-lock-tables \
+            --skip-dump-date \
+            --triggers \
+            --routines \
+            --events \
+            --host=${HOST} \
+            --user=${USER} \
+            --password=${DB_PASSWORD} \
+            --databases ${DATABASE} 2>/dev/null | \
+            gzip > "${BACKUP_FILE}"
+    
+    # Vérification de la taille
+    BACKUP_SIZE=$(ls -lh ${BACKUP_FILE} | awk '{print $5}')
+    if [ -s "${BACKUP_FILE}" ]; then
         print_separator
         success "Backup completed successfully!"
-        info "📁 Backup location: ${BOLD}${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz${NC}"
-        info "📦 Backup size: ${BOLD}$(ls -lh ${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz | awk '{print $5}')${NC}"
+        success "${TABLES_COUNT} tables clonées"
+        info "📁 Backup location: ${BOLD}${BACKUP_FILE}${NC}"
+        info "📦 Backup size: ${BOLD}${BACKUP_SIZE}${NC}"
+        info "📊 Nombre de lignes: $(gunzip < ${BACKUP_FILE} | wc -l)"
     else
         error "Backup file is empty or backup failed"
-        rm -f "${BACKUP_DIR}/${DATABASE}_${DATE}.sql.gz"
+        rm -f "${BACKUP_FILE}"
         print_separator
         exit 1
     fi
