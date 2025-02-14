@@ -3,22 +3,36 @@
 # Variables
 DC=docker compose
 
-# Couleurs pour le terminal
-CYAN=\033[0;36m
-NC=\033[0m # No Color
+# Couleurs
+BLUE:=\033[34m
+CYAN:=\033[36m
+GREEN:=\033[32m
+YELLOW:=\033[33m
+PURPLE:=\033[35m
+BOLD:=\033[1m
+DIM:=\033[2m
+NC:=\033[0m
 
 help: ## Affiche l'aide
-	@printf "\n📚 Orchestra - Liste des commandes disponibles:\n"
-	@printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-	@printf "🚀 COMMANDES PRINCIPALES:\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*\[MAIN\]$$' $(MAKEFILE_LIST) | sort | sed 's/\[MAIN\]//g' | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@printf "\n🛠️  DÉVELOPPEMENT:\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*\[DEV\]$$' $(MAKEFILE_LIST) | sort | sed 's/\[DEV\]//g' | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@printf "\n🔧 MAINTENANCE:\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*\[MAINT\]$$' $(MAKEFILE_LIST) | sort | sed 's/\[MAINT\]//g' | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@printf "\n💾 DONNÉES:\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*\[DATA\]$$' $(MAKEFILE_LIST) | sort | sed 's/\[DATA\]//g' | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@printf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+	@printf "\n$(BOLD)$(BLUE)📚 Orchestra - Liste des commandes disponibles:$(NC)\n"
+	@printf "$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)\n"
+	@printf "\n$(BOLD)$(GREEN)🚀 COMMANDES PRINCIPALES:$(NC)\n"
+	@printf "$(DIM)  Commandes pour gérer l'application complète$(NC)\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*\[MAIN\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[MAIN\]//g' | awk -v green="$(GREEN)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", green, $$1, nc, $$2}'
+	@printf "\n$(DIM)────────────────────────────────────────────────────$(NC)\n"
+	@printf "\n$(BOLD)$(YELLOW)🛠️  DÉVELOPPEMENT:$(NC)\n"
+	@printf "$(DIM)  Commandes pour le développement local$(NC)\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*\[DEV\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[DEV\]//g' | awk -v yellow="$(YELLOW)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", yellow, $$1, nc, $$2}'
+	@printf "\n$(DIM)────────────────────────────────────────────────────$(NC)\n"
+	@printf "\n$(BOLD)$(PURPLE)🔧 MAINTENANCE:$(NC)\n"
+	@printf "$(DIM)  Commandes pour la maintenance du système$(NC)\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*\[MAINT\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[MAINT\]//g' | awk -v purple="$(PURPLE)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", purple, $$1, nc, $$2}'
+	@printf "\n$(DIM)────────────────────────────────────────────────────$(NC)\n"
+	@printf "\n$(BOLD)$(CYAN)💾 DONNÉES:$(NC)\n"
+	@printf "$(DIM)  Commandes pour la gestion des données$(NC)\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*\[DATA\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[DATA\]//g' | awk -v cyan="$(CYAN)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", cyan, $$1, nc, $$2}'
+	@printf "\n$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)\n"
+	@printf "$(DIM)Utilisez 'make <command>' pour exécuter une commande$(NC)\n\n"
 
 up: ## Démarre les conteneurs et initialise l'application [MAIN]
 	@echo "🚀 Démarrage de l'application Orchestra..."
