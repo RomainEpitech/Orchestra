@@ -18,7 +18,7 @@ fi
 
 # Bannière
 echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-echo "┃      Restauration de la Backup       ┃"
+echo "┃      Restauration de la Backup      ┃"
 echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 echo ""
 

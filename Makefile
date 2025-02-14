@@ -1,4 +1,4 @@
-.PHONY: up down build clean migrate backup
+.PHONY: help up build down migrate clean clean-backup backup restore dev-back
 
 # Variables
 DC=docker compose
@@ -55,3 +55,13 @@ backup: ## MySQL DB Backup
 
 restore: ## MySQL DB Restore
 	$(DC) exec -T backup sh -c "cd /opt/backup && chmod +x Restore.sh && ./Restore.sh"
+
+dev-back: ## Lance uniquement l'environnement de développement backend (backend, db, phpmyadmin)
+	@echo "🚀 Démarrage de l'environnement de développement backend..."
+	$(DC) up -d backend db phpmyadmin nginx
+	@echo "⏳ Attente du démarrage de la base de données..."
+	sleep 5
+	@echo "🔄 Exécution des migrations..."
+	$(DC) exec backend php artisan migrate
+	@echo "✅ Backend démarrée sur http://localhost:8080"
+	@echo "📊 phpMyAdmin disponible sur http://localhost:8081"
