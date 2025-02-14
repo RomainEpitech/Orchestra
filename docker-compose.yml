@@ -1,31 +1,45 @@
 services:
   backend:
+    platform: ${PLATFORM:-linux/arm64}
     build:
       context: ./backend
       dockerfile: Dockerfile
-      platforms:
-        - "linux/amd64"
-        - "linux/arm64"
-    container_name: orchestra_backend
-    volumes:
-      - ./backend:/var/www/html
-    working_dir: /var/www/html
+      cache_from: 
+        - type=gha
+        - type=registry,ref=orchestra-backend:latest
+      cache_to: 
+        - type=gha,mode=max
+        - type=inline
     expose:
       - "9000"
+    volumes:
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+      - backend_cache:/var/www/html/bootstrap/cache
     depends_on:
-      - db
-    networks:
-      - orchestra_network
+      db:
+        condition: service_healthy
     environment:
+      DB_CONNECTION: mysql
       DB_HOST: db
-      DB_PORT: 3306
+      DB_PORT: ${MYSQL_PORT}
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 10s
+    restart: unless-stopped
+    networks:
+      - orchestra_network
 
   nginx:
+    platform: ${PLATFORM:-linux/arm64}
     image: nginx:alpine
-    platform: linux/arm64
     container_name: orchestra_nginx
     ports:
       - "${BACKEND_PORT}:80"
@@ -38,8 +52,8 @@ services:
       - orchestra_network
 
   db:
+    platform: ${PLATFORM:-linux/arm64}
     image: mysql:8.0
-    platform: linux/arm64
     container_name: orchestra_db
     restart: unless-stopped
     ports:
@@ -50,26 +64,58 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
-      - orchestra_mysql_data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - orchestra_network
 
   phpmyadmin:
-    image: arm64v8/phpmyadmin:5.2.1
-    platform: linux/arm64
+    platform: ${PLATFORM:-linux/arm64}
+    image: arm64v8/phpmyadmin:latest
     container_name: orchestra_phpmyadmin
     ports:
       - "${PHPMYADMIN_PORT}:80"
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - phpmyadmin_data:/var/lib/phpmyadmin
+    depends_on:
+      - db
+    networks:
+      - orchestra_network
+    restart: unless-stopped
+
+  backup:
+    platform: ${PLATFORM:-linux/arm64}
+    image: alpine:3.18
+    volumes:
+      - ./backups:/backups
+      - ./bin:/opt/backup
+    environment:
+      DB_HOST: db
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MYSQL_TCP_PORT: ${MYSQL_PORT}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS}
+      BACKUP_FREQUENCY: ${BACKUP_FREQUENCY}
+    entrypoint: []
+    command: sh -c "apk add --no-cache mysql-client dcron && chmod +x /opt/backup/backup.sh && /opt/backup/backup.sh --cron"
     depends_on:
       - db
     networks:
       - orchestra_network
 
 volumes:
-  orchestra_mysql_data:
+  dbdata:
+  backend_vendor:
+  backend_cache:
+  phpmyadmin_data:
 
 networks:
   orchestra_network:
