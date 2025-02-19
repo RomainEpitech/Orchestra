@@ -4,16 +4,12 @@ namespace App\Mail;
 
 use App\Models\Enterprise;
 use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class EnterpriseCreatedMail extends Mailable implements ShouldQueue
+class EnterpriseCreatedMail extends Mailable
 {
-    use SerializesModels;
-
     /**
      * Create a new message instance.
      */

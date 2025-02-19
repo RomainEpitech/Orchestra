@@ -85,13 +85,11 @@ class EnterpriseRegistrationService
                     recoveryKey: $enterprise->key
                 ));
             
-            // Enregistrement de l'envoi réussi
             logger()->info('Enterprise welcome email sent', [
                 'enterprise_uuid' => $enterprise->uuid,
                 'owner_email' => $owner->email
             ]);
         } catch (\Exception $e) {
-            // Enregistrement de l'erreur, mais ne pas bloquer le processus
             logger()->error('Failed to send enterprise welcome email', [
                 'enterprise_uuid' => $enterprise->uuid,
                 'owner_email' => $owner->email,

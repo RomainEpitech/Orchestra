@@ -12,28 +12,28 @@ class User extends Authenticatable
     use HasApiTokens, HasUuids, Notifiable;
 
     /**
-     * La clé primaire du modèle.
+     * The primary key for the model.
      *
      * @var string
      */
     protected $primaryKey = 'uuid';
 
     /**
-     * Indique si la clé primaire est auto-incrémentée.
+     * Indicates if the primary key is auto-incrementing.
      *
      * @var bool
      */
     public $incrementing = false;
 
     /**
-     * Le type de données de la clé primaire.
+     * The data type of the primary key.
      *
      * @var string
      */
     protected $keyType = 'string';
 
     /**
-     * Les attributs qui sont assignables en masse.
+     * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
@@ -47,7 +47,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Les attributs qui devraient être cachés pour la sérialisation.
+     * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
@@ -57,7 +57,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Les attributs qui devraient être convertis.
+     * The attributes that should be cast.
      *
      * @var array<string, string>
      */
@@ -66,7 +66,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Relation avec l'entreprise de l'utilisateur.
+     * Relationship with the user's enterprise.
      */
     public function enterprise()
     {
@@ -74,7 +74,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relation avec les entreprises dont l'utilisateur est propriétaire.
+     * Relationship with enterprises owned by the user.
      */
     public function ownedEnterprise()
     {
@@ -82,7 +82,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Vérifie si l'utilisateur est propriétaire d'une entreprise.
+     * Checks if the user is an owner of an enterprise.
      */
     public function isOwner()
     {
@@ -90,7 +90,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Obtenir le nom complet de l'utilisateur.
+     * Get the user's full name.
      */
     public function getFullNameAttribute()
     {

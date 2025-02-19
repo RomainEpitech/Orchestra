@@ -147,11 +147,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="{{ asset('images/logo.png') }}" alt="Orchestra Logo" class="logo">
-            <h1>Bienvenue sur Orchestra</h1>
-        </div>
-        
         <div class="content">
             <div class="welcome-message">
                 <p>Cher(e) <strong>{{ $ownerName }}</strong>,</p>

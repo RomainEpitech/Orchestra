@@ -11,28 +11,28 @@ class Enterprise extends Model
     use HasFactory, HasUuids;
 
     /**
-     * La clé primaire pour le modèle.
+     * The primary key for the model.
      *
      * @var string
      */
     protected $primaryKey = 'uuid';
 
     /**
-     * Indique si la clé primaire est auto-incrémentée.
+     * Indicates if the primary key is auto-incrementing.
      *
      * @var bool
      */
     public $incrementing = false;
 
     /**
-     * Le type de données de la clé primaire.
+     * The data type of the primary key.
      *
      * @var string
      */
     protected $keyType = 'string';
 
     /**
-     * Les attributs qui sont assignables en masse.
+     * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
@@ -44,7 +44,7 @@ class Enterprise extends Model
     ];
 
     /**
-     * Les attributs qui devraient être convertis.
+     * The attributes that should be cast.
      *
      * @var array<string, string>
      */
@@ -53,7 +53,7 @@ class Enterprise extends Model
     ];
 
     /**
-     * Relation avec le propriétaire de l'entreprise.
+     * Relationship with the enterprise's owner.
      */
     public function owner()
     {
@@ -61,7 +61,7 @@ class Enterprise extends Model
     }
 
     /**
-     * Relation avec les utilisateurs de l'entreprise.
+     * Relationship with the enterprise's users.
      */
     public function users()
     {
@@ -69,7 +69,7 @@ class Enterprise extends Model
     }
 
     /**
-     * Récupère une entreprise par sa clé de récupération.
+     * Retrieves an enterprise by its lookup key.
      * 
      * @param string $key
      * @return Enterprise|null
@@ -80,7 +80,7 @@ class Enterprise extends Model
     }
 
     /**
-     * Vérifie si l'entreprise est active.
+     * Checks if the enterprise is active.
      * 
      * @return bool
      */
@@ -90,7 +90,7 @@ class Enterprise extends Model
     }
 
     /**
-     * Obtenir l'URL de l'entreprise basée sur la clé.
+     * Get the enterprise URL based on its key.
      * 
      * @return string
      */
