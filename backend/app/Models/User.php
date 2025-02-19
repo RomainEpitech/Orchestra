@@ -2,31 +2,54 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasUuids, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * La clé primaire du modèle.
      *
-     * @var list<string>
+     * @var string
+     */
+    protected $primaryKey = 'uuid';
+
+    /**
+     * Indique si la clé primaire est auto-incrémentée.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * Le type de données de la clé primaire.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Les attributs qui sont assignables en masse.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'firstname',
+        'lastname',
         'email',
         'password',
+        'avatar',
+        'enterprise_uuid',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Les attributs qui devraient être cachés pour la sérialisation.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -34,15 +57,43 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Les attributs qui devraient être convertis.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * Relation avec l'entreprise de l'utilisateur.
+     */
+    public function enterprise()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Enterprise::class, 'enterprise_uuid', 'uuid');
+    }
+
+    /**
+     * Relation avec les entreprises dont l'utilisateur est propriétaire.
+     */
+    public function ownedEnterprise()
+    {
+        return $this->hasOne(Enterprise::class, 'owner_uuid', 'uuid');
+    }
+
+    /**
+     * Vérifie si l'utilisateur est propriétaire d'une entreprise.
+     */
+    public function isOwner()
+    {
+        return $this->ownedEnterprise()->exists();
+    }
+
+    /**
+     * Obtenir le nom complet de l'utilisateur.
+     */
+    public function getFullNameAttribute()
+    {
+        return "{$this->firstname} {$this->lastname}";
     }
 }

@@ -1,4 +1,4 @@
-.PHONY: help up build down migrate clean clean-backup backup restore dev-back
+.PHONY: help up build down migrate clean clean-backup backup restore dev-back back-migration
 
 # Variables
 DC=docker compose
@@ -86,3 +86,6 @@ dev-back: ## Backend service start [DEV]
 	$(DC) exec backend php artisan migrate
 	@echo "✅ Backend démarrée sur http://localhost:8080"
 	@echo "📊 phpMyAdmin disponible sur http://localhost:8081"
+
+back-migration: ## Run SQL Migrations [DATA]
+	@docker-compose exec backend php artisan migrate
