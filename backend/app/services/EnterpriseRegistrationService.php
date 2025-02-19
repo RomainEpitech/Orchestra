@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Mail\EnterpriseCreatedMail;
 use App\Models\Enterprise;
 use App\Models\User;
 use App\Services\KeyGeneratorService;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class EnterpriseRegistrationService
 {
@@ -16,19 +18,25 @@ class EnterpriseRegistrationService
         $this->keyGenerator = $keyGenerator;
     }
 
+    /**
+     * Register a new enterprise with an owner
+     *
+     * @param array $data
+     * @return array
+     */
     public function register(array $data): array
     {
-        // Générer une clé unique
+        // Generate a unique key for the enterprise
         $enterpriseKey = $this->keyGenerator->generateUniqueKey();
 
-        // Créer l'entreprise
+        // Create the enterprise
         $enterprise = Enterprise::create([
             'name' => $data['enterprise_name'],
             'key' => $enterpriseKey,
             'status' => true,
         ]);
 
-        // Créer l'utilisateur propriétaire
+        // Create the owner user
         $user = User::create([
             'firstname' => $data['first_name'],
             'lastname' => $data['last_name'],
@@ -37,14 +45,58 @@ class EnterpriseRegistrationService
             'enterprise_uuid' => $enterprise->uuid,
         ]);
 
-        // Mettre à jour l'entreprise avec l'ID du propriétaire
+        // Update enterprise with owner
         $enterprise->owner_uuid = $user->uuid;
         $enterprise->save();
 
-        // Retourner les ressources créées
+        // Send welcome email with enterprise details
+        $this->sendWelcomeEmail($enterprise, $user);
+
+        // Return the created resources (sanitized)
         return [
-            'enterprise' => $enterprise->only(['uuid', 'name', 'key', 'status']),
-            'owner' => $user->only(['uuid', 'firstname', 'lastname', 'email'])
+            'enterprise' => [
+                'uuid' => $enterprise->uuid,
+                'name' => $enterprise->name,
+                'status' => $enterprise->status,
+            ],
+            'owner' => [
+                'uuid' => $user->uuid,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+            ]
         ];
+    }
+
+    /**
+     * Send welcome email to the enterprise owner
+     *
+     * @param Enterprise $enterprise
+     * @param User $owner
+     * @return void
+     */
+    protected function sendWelcomeEmail(Enterprise $enterprise, User $owner): void
+    {
+        try {
+            Mail::to($owner->email)
+                ->send(new EnterpriseCreatedMail(
+                    enterprise: $enterprise,
+                    owner: $owner,
+                    recoveryKey: $enterprise->key
+                ));
+            
+            // Enregistrement de l'envoi réussi
+            logger()->info('Enterprise welcome email sent', [
+                'enterprise_uuid' => $enterprise->uuid,
+                'owner_email' => $owner->email
+            ]);
+        } catch (\Exception $e) {
+            // Enregistrement de l'erreur, mais ne pas bloquer le processus
+            logger()->error('Failed to send enterprise welcome email', [
+                'enterprise_uuid' => $enterprise->uuid,
+                'owner_email' => $owner->email,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }
