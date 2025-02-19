@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('enterprises', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('key')->unique();
             $table->boolean('status')->default(true);
             $table->uuid('owner_uuid')->nullable();
