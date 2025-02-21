@@ -32,6 +32,10 @@ help: ## Affiche l'aide
 	@printf "$(DIM)  Commandes pour la gestion des données$(NC)\n"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*\[DATA\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[DATA\]//g' | awk -v cyan="$(CYAN)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", cyan, $$1, nc, $$2}'
 	@printf "\n$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)\n"
+	@printf "\n$(BOLD)$(BLUE)🧪 TESTS:$(NC)\n"
+	@printf "$(DIM)  Commandes pour exécuter les tests$(NC)\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*\[TEST\]$$' $(MAKEFILE_LIST) | sort | sed -e 's/\[TEST\]//g' | awk -v blue="$(BLUE)" -v nc="$(NC)" 'BEGIN {FS = ":.*?## "}; {printf "  %s%-20s%s %s\n", blue, $$1, nc, $$2}'
+	@printf "\n$(DIM)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)\n"
 	@printf "$(DIM)Utilisez 'make <command>' pour exécuter une commande$(NC)\n\n"
 
 up: ## Démarre les conteneurs et initialise l'application [MAIN]
@@ -89,3 +93,28 @@ dev-back: ## Backend service start [DEV]
 
 back-migration: ## Run SQL Migrations [DATA]
 	@docker-compose exec backend php artisan migrate
+
+# Tests
+unit-test: ## Lance un test unitaire spécifique [TEST]
+	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
+		echo "⚠️  Veuillez spécifier le nom du test. Usage: make unit-test TestName"; \
+	else \
+		echo "🧪 Exécution du test unitaire $(filter-out $@,$(MAKECMDGOALS))..."; \
+		$(DC) exec backend php artisan test --filter=$(filter-out $@,$(MAKECMDGOALS)); \
+	fi
+
+feature-test: ## Lance un test de feature spécifique [TEST]
+	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
+		echo "⚠️  Veuillez spécifier le nom du test. Usage: make feature-test TestName"; \
+	else \
+		echo "🧪 Exécution du test de feature $(filter-out $@,$(MAKECMDGOALS))..."; \
+		$(DC) exec backend php artisan test --filter=$(filter-out $@,$(MAKECMDGOALS)); \
+	fi
+
+test: ## Lance tous les tests [TEST]
+	@echo "🧪 Exécution de tous les tests..."
+	@$(DC) exec backend php artisan test
+
+# Pour permettre le passage de paramètres
+%:
+	@:
