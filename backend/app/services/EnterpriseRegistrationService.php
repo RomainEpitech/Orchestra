@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\EnterpriseCreatedMail;
 use App\Models\Enterprise;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\KeyGeneratorService;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +37,10 @@ class EnterpriseRegistrationService
             'status' => true,
         ]);
 
+        $adminRole = Role::where('name', 'Administrateur')
+            ->where("is_shared", true)
+            ->first();
+
         // Create the owner user
         $user = User::create([
             'firstname' => $data['first_name'],
@@ -43,6 +48,7 @@ class EnterpriseRegistrationService
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'enterprise_uuid' => $enterprise->uuid,
+            'role_uuid' => $adminRole->uuid,
         ]);
 
         // Update enterprise with owner
@@ -64,6 +70,7 @@ class EnterpriseRegistrationService
                 'firstname' => $user->firstname,
                 'lastname' => $user->lastname,
                 'email' => $user->email,
+                'role' => $adminRole->name,
             ]
         ];
     }
