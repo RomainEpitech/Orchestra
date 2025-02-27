@@ -15,12 +15,18 @@ class RoleSeeder extends Seeder
         // Rôle administrateur (partagé par défaut)
         Role::create([
             'name' => 'Administrateur',
-            'authority' => json_encode([
-                'full_access' => true,
-                'manage_users' => true,
-                'manage_roles' => true,
-                // Autres permissions selon votre système
-            ]),
+            'authority' => [
+                    'enterprise' => [
+                        'read' => true,
+                        'edit' => true,
+                    ],
+                    'personnel' => [
+                        'read' => true,
+                        'create' => true,
+                        'edit' => true,
+                        'delete' => true,
+                    ],
+                ],
             'color_hex' => '#FF5722',
             'is_shared' => true,
         ]);
@@ -28,12 +34,18 @@ class RoleSeeder extends Seeder
         // Rôle employé (partagé par défaut)
         Role::create([
             'name' => 'Employé',
-            'authority' => json_encode([
-                'full_access' => false,
-                'manage_users' => false,
-                'manage_roles' => false,
-                // Permissions limitées
-            ]),
+            'authority' => [
+                    'enterprise' => [
+                        'read' => false,
+                        'edit' => false,
+                    ],
+                    'personnel' => [
+                        'read' => false,
+                        'create' => false,
+                        'edit' => false,
+                        'delete' => false,
+                    ],
+                ],
             'color_hex' => '#4CAF50',
             'is_shared' => true,
         ]);
