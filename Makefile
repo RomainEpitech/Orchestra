@@ -95,7 +95,7 @@ back-migration: ## Run SQL Migrations [DATA]
 	@docker-compose exec backend php artisan migrate
 
 back-seeders: ## Run seeders and factories [DATA]
-	@$(DC) exec backend php artisan seeder
+	@$(DC) exec backend php artisan db:seed
 
 # Tests
 unit-test: ## Lance un test unitaire spécifique [TEST]
