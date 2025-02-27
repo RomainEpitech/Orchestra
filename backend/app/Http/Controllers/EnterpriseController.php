@@ -51,7 +51,6 @@ class EnterpriseController extends Controller
             ], 422);
             
         } catch (\Exception $e) {
-            // Log l'erreur pour le debugging
             logger()->error('Enterprise registration failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -59,6 +58,58 @@ class EnterpriseController extends Controller
             
             return response()->json([
                 'message' => 'An error occurred during registration',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the authenticated user's enterprise details
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function show(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $enterprise = $user->enterprise()->with(['owner'])->first();
+            
+            if (!$enterprise) {
+                return response()->json([
+                    'message' => 'Enterprise not found'
+                ], 404);
+            }
+            
+            // Récupérer le nombre d'employés
+            $employeeCount = $user->enterprise->users()->count();
+            
+            return response()->json([
+                'message' => 'Enterprise retrieved successfully',
+                'data' => [
+                    'enterprise' => [
+                        'uuid' => $enterprise->uuid,
+                        'name' => $enterprise->name,
+                        'status' => $enterprise->status,
+                        'created_at' => $enterprise->created_at,
+                        'employee_count' => $employeeCount,
+                        'owner' => [
+                            'uuid' => $enterprise->owner->uuid,
+                            'firstname' => $enterprise->owner->firstname,
+                            'lastname' => $enterprise->owner->lastname,
+                            'email' => $enterprise->owner->email,
+                        ]
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Failed to retrieve enterprise data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'An error occurred while retrieving enterprise data',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
