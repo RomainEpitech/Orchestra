@@ -38,6 +38,6 @@ class Kernel extends HttpKernel
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        // 'enterprise.key' => CheckEnterpriseKey::class
+        'check.authority' => \App\Http\Middleware\CheckModuleAuthority::class,
     ];
 }
