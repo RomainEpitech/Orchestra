@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ModuleLimitExceededException;
+use App\Models\Module;
 use App\Services\PersonnelLicenseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,6 +46,23 @@ class PersonnelModuleController extends Controller
                     'data' => $result
                 ], 201);
             });
+        } catch (ModuleLimitExceededException $e) {
+            // Récupérer les informations du module personnel
+            $personnelModule = Module::where('key', 'personnel')->first();
+            
+            return response()->json([
+                'message' => 'User limit reached',
+                'error' => [
+                    'type' => 'module_limit_exceeded',
+                    'module' => 'personnel',
+                    'current_count' => $e->getCurrentCount(),
+                    'limit' => $e->getLimit(),
+                    'upgrade_info' => [
+                        'module_name' => $personnelModule ? $personnelModule->name : 'Personnel',
+                        'price' => $personnelModule ? $personnelModule->price : null
+                    ]
+                ]
+            ], 403); // 403 Forbidden est approprié pour les limitations
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',

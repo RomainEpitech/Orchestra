@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Mail\NewLicenseInvitation;
 use App\Models\User;
+use App\Exceptions\ModuleLimitExceededException;
+use App\Utils\ModuleLimiter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -16,9 +18,16 @@ class PersonnelLicenseService
      * @param array $userData
      * @param string $enterpriseUuid
      * @return array
+     * @throws ModuleLimitExceededException
      */
     public function createLicense(array $userData, string $enterpriseUuid): array
     {
+        // Obtenir le nombre actuel d'utilisateurs dans l'entreprise
+        $currentUserCount = User::where('enterprise_uuid', $enterpriseUuid)->count();
+        
+        // Vérifier la limite d'utilisateurs
+        ModuleLimiter::enforceLimit($enterpriseUuid, 'personnel', 'userLimit', $currentUserCount);
+        
         // Générer un mot de passe temporaire
         $temporaryPassword = Str::random(12);
         
