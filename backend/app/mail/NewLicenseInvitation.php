@@ -34,7 +34,7 @@ class NewLicenseInvitation extends Mailable
     public function build()
     {
         return $this->subject('Bienvenue sur Orchestra - Votre licence a été activée')
-            ->markdown('emails.new-license-invitation', [
+            ->view('emails.new-license-invitation', [
                 'user' => $this->user,
                 'temporaryPassword' => $this->temporaryPassword,
                 'enterprise' => $this->user->enterprise
