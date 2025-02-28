@@ -71,7 +71,8 @@ class EnterpriseRegistrationService
                 'lastname' => $user->lastname,
                 'email' => $user->email,
                 'role' => $adminRole->name,
-            ]
+            ],
+            'enterprise_object' => $enterprise
         ];
     }
 

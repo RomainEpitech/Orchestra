@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\EnterpriseRegistrationService;
+use App\Services\ModuleAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,11 +13,17 @@ use Illuminate\Validation\ValidationException;
 class EnterpriseController extends Controller
 {
     protected EnterpriseRegistrationService $registrationService;
+    protected ModuleAssignmentService $moduleService;
 
-    public function __construct(EnterpriseRegistrationService $registrationService)
+    public function __construct(
+        EnterpriseRegistrationService $registrationService,
+        ModuleAssignmentService $moduleService
+    )
     {
         $this->registrationService = $registrationService;
+        $this->moduleService = $moduleService;
     }
+
 
     /**
      * Create new enterprise with admin user
@@ -38,6 +45,9 @@ class EnterpriseController extends Controller
 
             return DB::transaction(function () use ($validated) {
                 $result = $this->registrationService->register($validated);
+                $this->moduleService->assignCoreModules($result['enterprise_object']);
+
+                unset($result['enterprise_object']);
                 
                 return response()->json([
                     'message' => 'Enterprise and admin user created successfully',
