@@ -80,4 +80,51 @@ class PersonnelModuleController extends Controller
             ], 500);
         }
     }
+
+    /**
+    * Delete a user license from the enterprise
+    *
+    * @param Request $request
+    * @param string $userUuid
+    * @return JsonResponse
+    */
+    public function deleteLicense(Request $request, string $userUuid): JsonResponse
+    {
+        try {
+            return DB::transaction(function () use ($request, $userUuid) {
+                $adminUuid = $request->user()->uuid;
+                $enterpriseUuid = $request->user()->enterprise_uuid;
+                
+                $result = $this->licenseService->deleteLicense(
+                    $userUuid,
+                    $adminUuid,
+                    $enterpriseUuid
+                );
+                
+                return response()->json([
+                    'message' => 'License deleted successfully',
+                    'data' => $result
+                ]);
+            });
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'User not found or not part of your enterprise',
+            ], 404);
+        } catch (\App\Exceptions\PermissionDeniedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 403);
+        } catch (\Exception $e) {
+            logger()->error('License deletion failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_uuid' => $userUuid
+            ]);
+            
+            return response()->json([
+                'message' => 'An error occurred during license deletion',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
 }

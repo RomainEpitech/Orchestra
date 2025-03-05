@@ -43,7 +43,8 @@ class Role extends Model
         'authority',
         'color_hex',
         'enterprise_uuid',
-        'is_shared'
+        'is_shared',
+        'hierarchy_level',
     ];
 
     /**
@@ -54,6 +55,7 @@ class Role extends Model
     protected $casts = [
         'authority' => 'json',
         'is_shared' => 'boolean',
+        'hierarchy_level',
     ];
 
     /**
@@ -70,5 +72,21 @@ class Role extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'role_uuid', 'uuid');
+    }
+
+    /**
+     * Check if Hierarchy level is above or not
+     *
+     * @param Role|null $otherRole
+     * @return bool
+     */
+    public function hasHigherOrEqualHierarchyThan(?Role $otherRole): bool
+    {
+        if (!$otherRole) {
+            return true;
+        }
+        
+        // The lower the access level is the higher in access it has (1 being the highest)
+        return $this->hierarchy_level <= $otherRole->hierarchy_level;
     }
 }

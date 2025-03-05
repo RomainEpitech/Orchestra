@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\NewLicenseInvitation;
 use App\Models\User;
 use App\Exceptions\ModuleLimitExceededException;
+use App\Models\Enterprise;
 use App\Utils\ModuleLimiter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -90,5 +91,83 @@ class PersonnelLicenseService
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Delete a user license from an enterprise
+     *
+     * @param string $userUuid UUID of the user to delete
+     * @param string $adminUuid UUID of the admin performing the deletion
+     * @param string $enterpriseUuid UUID of the enterprise
+     * @return array
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \App\Exceptions\PermissionDeniedException
+     */
+    public function deleteLicense(string $userUuid, string $adminUuid, string $enterpriseUuid): array
+    {
+        // Empêcher de supprimer son propre compte
+        if ($userUuid === $adminUuid) {
+            throw new \App\Exceptions\PermissionDeniedException("You cannot delete your own account");
+        }
+        
+        // Récupérer l'utilisateur à supprimer et vérifier qu'il appartient à la bonne entreprise
+        $userToDelete = User::where('uuid', $userUuid)
+            ->where('enterprise_uuid', $enterpriseUuid)
+            ->with('role')
+            ->firstOrFail();
+        
+        // Récupérer l'administrateur qui effectue la suppression
+        $admin = User::where('uuid', $adminUuid)
+            ->with(['role', 'enterprise'])
+            ->firstOrFail();
+        
+        // Récupérer l'entreprise pour vérifier qui est le propriétaire
+        $enterprise = Enterprise::where('uuid', $enterpriseUuid)
+            ->first();
+            
+        $isOwner = $enterprise && $enterprise->owner_uuid === $admin->uuid;
+        
+        // Si l'admin n'est pas le propriétaire, vérifier la hiérarchie des rôles
+        if (!$isOwner) {
+            // Vérifier si l'utilisateur à supprimer a un rôle de niveau strictement inférieur
+            if (!$admin->role || !$userToDelete->role || 
+                $admin->role->hierarchy_level >= $userToDelete->role->hierarchy_level) {
+                throw new \App\Exceptions\PermissionDeniedException(
+                    "You can only delete users with a lower hierarchy level than yours"
+                );
+            }
+        }
+        
+        // Récupérer des informations sur l'utilisateur avant de le supprimer
+        $userData = [
+            'uuid' => $userToDelete->uuid,
+            'firstname' => $userToDelete->firstname,
+            'lastname' => $userToDelete->lastname,
+            'email' => $userToDelete->email,
+            'role' => $userToDelete->role ? [
+                'uuid' => $userToDelete->role->uuid,
+                'name' => $userToDelete->role->name
+            ] : null,
+            'deleted_at' => now()
+        ];
+        
+        // Enregistrer l'action dans les logs pour le système de traçabilité futur
+        logger()->info('User license deleted', [
+            'deleted_user_uuid' => $userUuid,
+            'admin_uuid' => $adminUuid,
+            'enterprise_uuid' => $enterpriseUuid,
+            'is_owner' => $isOwner,
+            'timestamp' => now()->toIso8601String()
+        ]);
+        
+        // Supprimer l'utilisateur
+        $userToDelete->delete();
+        
+        return [
+            'deleted_user' => $userData,
+            'deleted_by' => $adminUuid,
+            'deleted_by_owner' => $isOwner,
+            'enterprise_uuid' => $enterpriseUuid
+        ];
     }
 }

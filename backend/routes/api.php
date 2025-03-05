@@ -17,6 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/enterprise/show', [EnterpriseController::class, 'show']);
         });
     
-    Route::middleware([CheckModuleAuthority::parameters('enterprise', 'read')])
+    Route::middleware([CheckModuleAuthority::parameters('personnel', 'create')])
         ->post('/personnel/licence', [PersonnelModuleController::class, 'createLicense']);
+    Route::middleware([CheckModuleAuthority::parameters('personnel', 'delete')])
+        ->delete('/personnel/licence/{userUuid}', [PersonnelModuleController::class, 'deleteLicense']);
 });
