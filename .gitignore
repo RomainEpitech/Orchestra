@@ -1,3 +1,2 @@
 .env
 /backups/*.gz
-/logs/journal.log
