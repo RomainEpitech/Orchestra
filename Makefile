@@ -75,6 +75,28 @@ clean-backup: ## Nettoie uniquement les backups MySQL [DATA]
 	@printf "\n🗑️  Nettoyage des backups...\n"
 	@sh ./bin/Clean-backup.sh
 
+setup-logging: ## Configure le système de journalisation [MAINT]
+	@printf "\n📊 Configuration du système de journalisation...\n"
+	@chmod +x ./bin/SetupLogging.sh
+	@./bin/SetupLogging.sh
+
+log-analyze: ## Analyse les journaux du système [MAINT]
+	@printf "\n🔍 Analyse des journaux du système...\n"
+	@chmod +x ./bin/LogAnalyzer.sh
+	@./bin/LogAnalyzer.sh
+
+log-tail: ## Affiche les journaux en temps réel [MAINT]
+	@printf "\n📋 Affichage des journaux en temps réel...\n"
+	@chmod +x ./bin/DbLogger.sh
+	@./bin/DbLogger.sh tail
+
+log-report: ## Génère un rapport complet des journaux [DATA]
+	@printf "\n📊 Génération d'un rapport de journalisation...\n"
+	@chmod +x ./bin/LogAnalyzer.sh
+	@mkdir -p ./logs
+	@./bin/LogAnalyzer.sh 5
+	@printf "\n✅ Rapport généré dans le dossier logs\n"
+
 backup: ## MySQL DB Backup [DATA]
 	docker-compose exec -T backup sh -c "cd /opt/backup && ./backup.sh"
 
