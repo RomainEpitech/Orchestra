@@ -15,6 +15,42 @@ class SystemLoggerService
     protected $logFile;
 
     /**
+     * Couleurs ANSI pour le terminal
+     * 
+     * @var array
+     */
+    protected $colors = [
+        'reset' => "\033[0m",
+        'bold' => "\033[1m",
+        'dim' => "\033[2m",
+        'black' => "\033[30m",
+        'red' => "\033[31m",
+        'green' => "\033[32m",
+        'yellow' => "\033[33m",
+        'blue' => "\033[34m",
+        'magenta' => "\033[35m",
+        'cyan' => "\033[36m",
+        'white' => "\033[37m",
+        'bg_green' => "\033[42m",
+        'bg_yellow' => "\033[43m",
+        'bg_blue' => "\033[44m",
+        'bg_magenta' => "\033[45m",
+    ];
+
+    /**
+     * Couleurs par type d'événement
+     * 
+     * @var array
+     */
+    protected $eventColors = [
+        'ENTERPRISE_' => 'blue',
+        'LICENSE_' => 'green',
+        'MODULE_' => 'magenta',
+        'ROLE_' => 'cyan',
+        'DB_' => 'yellow',
+    ];
+
+    /**
      * Constructeur
      */
     public function __construct()
@@ -34,7 +70,7 @@ class SystemLoggerService
      */
     public function logEnterpriseEvent(string $action, array $data): bool
     {
-        $details = json_encode($data);
+        $details = json_encode($data, JSON_PRETTY_PRINT);
         return $this->logEvent("ENTERPRISE_{$action}", $details);
     }
 
@@ -43,7 +79,7 @@ class SystemLoggerService
      */
     public function logLicenseEvent(string $action, array $data): bool
     {
-        $details = json_encode($data);
+        $details = json_encode($data, JSON_PRETTY_PRINT);
         return $this->logEvent("LICENSE_{$action}", $details);
     }
 
@@ -52,7 +88,7 @@ class SystemLoggerService
      */
     public function logModuleEvent(string $action, array $data): bool
     {
-        $details = json_encode($data);
+        $details = json_encode($data, JSON_PRETTY_PRINT);
         return $this->logEvent("MODULE_{$action}", $details);
     }
 
@@ -61,7 +97,7 @@ class SystemLoggerService
      */
     public function logRoleEvent(string $action, array $data): bool
     {
-        $details = json_encode($data);
+        $details = json_encode($data, JSON_PRETTY_PRINT);
         return $this->logEvent("ROLE_{$action}", $details);
     }
 
@@ -70,24 +106,84 @@ class SystemLoggerService
      */
     public function logDbOperation(string $operation, string $table, array $data): bool
     {
-        $details = json_encode($data);
+        $details = json_encode($data, JSON_PRETTY_PRINT);
         return $this->logEvent("DB_{$operation}_{$table}", $details);
     }
 
     /**
-     * Journalise un événement générique
+     * Détermine la couleur pour un type d'événement
+     */
+    protected function getColorForEventType(string $type): string
+    {
+        foreach ($this->eventColors as $prefix => $color) {
+            if (strpos($type, $prefix) === 0) {
+                return $this->colors[$color];
+            }
+        }
+        return $this->colors['reset'];
+    }
+
+    /**
+     * Format les détails JSON pour une meilleure lisibilité
+     */
+    protected function formatJson(string $json): string
+    {
+        $data = json_decode($json, true);
+        if (!$data) return $json;
+        
+        // Extraire les informations principales
+        $mainInfo = [];
+        
+        // Informations clés à extraire selon le contexte
+        if (isset($data['name'])) $mainInfo[] = "name: " . $data['name'];
+        if (isset($data['fullname'])) $mainInfo[] = "fullname: " . $data['fullname'];
+        if (isset($data['email'])) $mainInfo[] = "email: " . $data['email'];
+        if (isset($data['module_name'])) $mainInfo[] = "module: " . $data['module_name'];
+        if (isset($data['enterprise_name'])) $mainInfo[] = "enterprise: " . $data['enterprise_name'];
+        if (isset($data['role_name'])) $mainInfo[] = "role: " . $data['role_name'];
+
+        // Extraire les changements principaux
+        $changes = [];
+        if (isset($data['changed_attributes'])) {
+            foreach ($data['changed_attributes'] as $key => $value) {
+                $changes[] = "$key → $value";
+            }
+        }
+        
+        // Construire la chaîne formatée
+        $formatted = " [" . implode(", ", $mainInfo) . "]";
+        
+        if (!empty($changes)) {
+            $formatted .= " (Changes: " . implode(", ", $changes) . ")";
+        }
+        
+        return $formatted . "\n" . $json;
+    }
+
+    /**
+     * Journalise un événement générique avec formatage amélioré
      */
     public function logEvent(string $type, string $details): bool
     {
         try {
             $timestamp = date('Y-m-d H:i:s');
-            $logEntry = "[{$timestamp}] [EVENT] {$type}: {$details}" . PHP_EOL;
+            $color = $this->getColorForEventType($type);
+            $formattedDetails = $this->formatJson($details);
             
-            // Écrire directement dans le fichier de logs
-            File::append($this->logFile, $logEntry);
+            // Format pour le fichier (sans couleurs)
+            $plainEntry = "[{$timestamp}] [EVENT] {$type}:" . $formattedDetails . "\n\n";
             
-            // Également logger dans Laravel pour avoir une redondance
-            Log::info("{$type}: {$details}");
+            // Format coloré pour la console (si utilisé avec tail -f ou cat)
+            $colorEntry = "{$this->colors['dim']}[{$timestamp}]{$this->colors['reset']} " .
+                "[EVENT] " . 
+                "{$color}{$this->colors['bold']}{$type}{$this->colors['reset']}:" . 
+                $formattedDetails . "\n\n";
+            
+            // Écrire dans le fichier de logs (version sans couleurs)
+            File::append($this->logFile, $plainEntry);
+            
+            // Également logger dans Laravel
+            Log::info("{$type}: " . json_encode(json_decode($details), true));
             
             return true;
         } catch (\Exception $e) {
