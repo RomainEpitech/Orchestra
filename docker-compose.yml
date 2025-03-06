@@ -38,6 +38,56 @@ services:
     networks:
       - orchestra_network
 
+  queue-worker-high:
+    platform: ${PLATFORM:-linux/arm64}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: php artisan queue:work --queue=emails,default --tries=3 --timeout=90 --sleep=3 --max-time=3600 --max-jobs=1000
+    volumes:
+      - ./backend:/var/www/html
+      - ./logs:/var/www/logs
+      - backend_vendor:/var/www/html/vendor
+      - backend_cache:/var/www/html/bootstrap/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: ${MYSQL_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - orchestra_network
+
+  queue-worker-low:
+    platform: ${PLATFORM:-linux/arm64}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: php artisan queue:work --queue=logging --tries=2 --timeout=30 --sleep=5 --max-time=3600 --max-jobs=1000
+    volumes:
+      - ./backend:/var/www/html
+      - ./logs:/var/www/logs
+      - backend_vendor:/var/www/html/vendor
+      - backend_cache:/var/www/html/bootstrap/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: ${MYSQL_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - orchestra_network
+
   nginx:
     platform: ${PLATFORM:-linux/arm64}
     image: nginx:alpine

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogSystemEvent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 
@@ -71,7 +72,9 @@ class SystemLoggerService
     public function logEnterpriseEvent(string $action, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        return $this->logEvent("ENTERPRISE_{$action}", $details);
+        // Dispatch le job au lieu de l'exécuter directement
+        LogSystemEvent::dispatch("ENTERPRISE_{$action}", $details);
+        return true;
     }
 
     /**
@@ -80,7 +83,8 @@ class SystemLoggerService
     public function logLicenseEvent(string $action, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        return $this->logEvent("LICENSE_{$action}", $details);
+        LogSystemEvent::dispatch("LICENSE_{$action}", $details);
+        return true;
     }
 
     /**
@@ -89,7 +93,8 @@ class SystemLoggerService
     public function logModuleEvent(string $action, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        return $this->logEvent("MODULE_{$action}", $details);
+        LogSystemEvent::dispatch("MODULE_{$action}", $details);
+        return true;
     }
 
     /**
@@ -98,7 +103,8 @@ class SystemLoggerService
     public function logRoleEvent(string $action, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        return $this->logEvent("ROLE_{$action}", $details);
+        LogSystemEvent::dispatch("ROLE_{$action}", $details);
+        return true;
     }
 
     /**
@@ -107,7 +113,8 @@ class SystemLoggerService
     public function logDbOperation(string $operation, string $table, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        return $this->logEvent("DB_{$operation}_{$table}", $details);
+        LogSystemEvent::dispatch("DB_{$operation}_{$table}", $details);
+        return true;
     }
 
     /**
