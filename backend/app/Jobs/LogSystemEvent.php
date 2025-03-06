@@ -17,11 +17,6 @@ class LogSystemEvent implements ShouldQueue
 
     protected $type;
     protected $details;
-    
-    // Supprimez cette ligne qui cause le conflit
-    // public $queue = 'logging';
-    
-    // Configuration pour le job
     public $tries = 2;
     public $backoff = 30;
     public $timeout = 30;
@@ -30,7 +25,6 @@ class LogSystemEvent implements ShouldQueue
     {
         $this->type = $type;
         $this->details = $details;
-        // Définissez la queue de cette façon à la place
         $this->onQueue('logging');
     }
 

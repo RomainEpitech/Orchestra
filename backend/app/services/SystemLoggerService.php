@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\File;
 class SystemLoggerService
 {
     /**
-     * Chemin vers le fichier de journal
+     * Path to the log file
      * 
      * @var string
      */
     protected $logFile;
 
     /**
-     * Couleurs ANSI pour le terminal
+     * ANSI colors for the terminal
      * 
      * @var array
      */
@@ -39,7 +39,7 @@ class SystemLoggerService
     ];
 
     /**
-     * Couleurs par type d'événement
+     * Colors per event type
      * 
      * @var array
      */
@@ -52,14 +52,14 @@ class SystemLoggerService
     ];
 
     /**
-     * Constructeur
+     * Constructor
      */
     public function __construct()
     {
-        // Créer un dossier logs dans storage
+        // Create a logs directory in storage
         $this->logFile = '/var/www/logs/journal.log';
         
-        // S'assurer que le répertoire existe
+        // Ensure the directory exists
         $logDir = dirname($this->logFile);
         if (!File::exists($logDir)) {
             File::makeDirectory($logDir, 0755, true);
@@ -67,18 +67,18 @@ class SystemLoggerService
     }
 
     /**
-     * Journalise un événement d'entreprise
+     * Logs an enterprise event
      */
     public function logEnterpriseEvent(string $action, array $data): bool
     {
         $details = json_encode($data, JSON_PRETTY_PRINT);
-        // Dispatch le job au lieu de l'exécuter directement
+        // Dispatch the job instead of executing it directly
         LogSystemEvent::dispatch("ENTERPRISE_{$action}", $details);
         return true;
     }
 
     /**
-     * Journalise un événement de licence
+     * Logs a license event
      */
     public function logLicenseEvent(string $action, array $data): bool
     {
@@ -88,7 +88,7 @@ class SystemLoggerService
     }
 
     /**
-     * Journalise un événement de module
+     * Logs a module event
      */
     public function logModuleEvent(string $action, array $data): bool
     {
@@ -98,7 +98,7 @@ class SystemLoggerService
     }
 
     /**
-     * Journalise un événement de rôle
+     * Logs a role event
      */
     public function logRoleEvent(string $action, array $data): bool
     {
@@ -108,7 +108,7 @@ class SystemLoggerService
     }
 
     /**
-     * Journalise une opération sur la base de données
+     * Logs a database operation
      */
     public function logDbOperation(string $operation, string $table, array $data): bool
     {
@@ -118,7 +118,7 @@ class SystemLoggerService
     }
 
     /**
-     * Détermine la couleur pour un type d'événement
+     * Determines the color for an event type
      */
     protected function getColorForEventType(string $type): string
     {
@@ -131,17 +131,17 @@ class SystemLoggerService
     }
 
     /**
-     * Format les détails JSON pour une meilleure lisibilité
+     * Formats JSON details for better readability
      */
     protected function formatJson(string $json): string
     {
         $data = json_decode($json, true);
         if (!$data) return $json;
         
-        // Extraire les informations principales
+        // Extract main information
         $mainInfo = [];
         
-        // Informations clés à extraire selon le contexte
+        // Key information to extract based on context
         if (isset($data['name'])) $mainInfo[] = "name: " . $data['name'];
         if (isset($data['fullname'])) $mainInfo[] = "fullname: " . $data['fullname'];
         if (isset($data['email'])) $mainInfo[] = "email: " . $data['email'];
@@ -149,7 +149,7 @@ class SystemLoggerService
         if (isset($data['enterprise_name'])) $mainInfo[] = "enterprise: " . $data['enterprise_name'];
         if (isset($data['role_name'])) $mainInfo[] = "role: " . $data['role_name'];
 
-        // Extraire les changements principaux
+        // Extract main changes
         $changes = [];
         if (isset($data['changed_attributes'])) {
             foreach ($data['changed_attributes'] as $key => $value) {
@@ -157,7 +157,7 @@ class SystemLoggerService
             }
         }
         
-        // Construire la chaîne formatée
+        // Build the formatted string
         $formatted = " [" . implode(", ", $mainInfo) . "]";
         
         if (!empty($changes)) {
@@ -168,7 +168,7 @@ class SystemLoggerService
     }
 
     /**
-     * Journalise un événement générique avec formatage amélioré
+     * Logs a generic event with enhanced formatting
      */
     public function logEvent(string $type, string $details): bool
     {
@@ -177,19 +177,19 @@ class SystemLoggerService
             $color = $this->getColorForEventType($type);
             $formattedDetails = $this->formatJson($details);
             
-            // Format pour le fichier (sans couleurs)
+            // Format for the file (without colors)
             $plainEntry = "[{$timestamp}] [EVENT] {$type}:" . $formattedDetails . "\n\n";
             
-            // Format coloré pour la console (si utilisé avec tail -f ou cat)
+            // Colored format for the console (if used with tail -f or cat)
             $colorEntry = "{$this->colors['dim']}[{$timestamp}]{$this->colors['reset']} " .
                 "[EVENT] " . 
                 "{$color}{$this->colors['bold']}{$type}{$this->colors['reset']}:" . 
                 $formattedDetails . "\n\n";
             
-            // Écrire dans le fichier de logs (version sans couleurs)
+            // Write to the log file (plain version)
             File::append($this->logFile, $plainEntry);
             
-            // Également logger dans Laravel
+            // Also log in Laravel
             Log::info("{$type}: " . json_encode(json_decode($details), true));
             
             return true;

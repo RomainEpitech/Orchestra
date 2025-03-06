@@ -32,13 +32,10 @@ class SystemLoggerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Vérifier si l'application est en mode console
         if ($this->app->runningInConsole()) {
-            // Ne pas charger les observers lors de l'exécution des migrations ou des commandes
             return;
         }
 
-        // Enregistrer les observers pour les modèles que nous voulons surveiller
         Enterprise::observe(EnterpriseObserver::class);
         User::observe(UserObserver::class);
         Role::observe(RoleObserver::class);
