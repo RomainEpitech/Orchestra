@@ -25,10 +25,7 @@ class AuthService
             ]);
         }
 
-        // Récupérer les données de l'entreprise et du rôle
         $user->load(['enterprise', 'role']);
-
-        // Créer un token
         $token = $user->createToken('api-token');
 
         return [
@@ -50,5 +47,57 @@ class AuthService
             ],
             'token' => $token->plainTextToken,
         ];
+    }
+
+    /**
+     * Update user profile
+     *
+     * @param User $user
+     * @param array $data
+     * @return array
+     */
+    public function updateProfile($user, array $data): array
+    {
+        $user->update($data);
+        $user = $user->fresh();
+        
+        return [
+            'user' => [
+                'id' => $user->id,
+                'uuid' => $user->uuid,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'enterprise_uuid' => $user->enterprise_uuid,
+                'role_uuid' => $user->role_uuid,
+            ]
+        ];
+    }
+
+    /**
+     * Change user password
+     *
+     * @param User $user
+     * @param string $password
+     * @param bool $shouldRevokeTokens
+     * @return void
+     */
+    public function changePassword(User $user, string $password, bool $shouldRevokeTokens = true): void
+    {
+        $user->update([
+            'password' => Hash::make($password)
+        ]);
+        
+        $request = request();
+        $ipAddress = $request ? $request->ip() : null;
+        $userAgent = $request ? $request->userAgent() : null;
+        
+        \App\Jobs\ProcessPasswordChange::dispatch(
+            $user, 
+            $shouldRevokeTokens,
+            $ipAddress,
+            $userAgent
+        );
     }
 }

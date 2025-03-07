@@ -10,7 +10,9 @@ Route::post('/enterprise/register', [EnterpriseController::class, 'store']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::put('/auth/update', [AuthController::class, 'updateProfile']);
+    Route::put('/auth/change-password', [AuthController::class, 'changePassword']);
     
     Route::middleware([CheckModuleAuthority::parameters('enterprise', 'read')])
         ->group(function () {
