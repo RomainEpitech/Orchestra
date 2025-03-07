@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -92,6 +93,7 @@ class AuthService
         $request = request();
         $ipAddress = $request ? $request->ip() : null;
         $userAgent = $request ? $request->userAgent() : null;
+        $user->tokens()->delete();
         
         \App\Jobs\ProcessPasswordChange::dispatch(
             $user, 
@@ -99,5 +101,43 @@ class AuthService
             $ipAddress,
             $userAgent
         );
+    }
+
+    /**
+     * Logout user by revoking current token
+     *
+     * @param User $user
+     * @param string|null $token
+     * @return bool
+     */
+    public function logout(User $user, ?string $token = null): bool
+    {
+        try {
+            if (!$token) {
+                logger()->warning('Logout attempted without token', [
+                    'user_uuid' => $user->uuid,
+                    'user_email' => $user->email
+                ]);
+                return false;
+            }
+
+            $tokenId = $user->currentAccessToken()->id;
+            $user->tokens()->where('id', $tokenId)->delete();
+            
+            logger()->info('Token successfully revoked', [
+                'user_uuid' => $user->uuid,
+                'token_id' => $tokenId
+            ]);
+            
+            return true;
+        } catch (\Exception $e) {
+            logger()->error('Logout service failed', [
+                'user_uuid' => $user->uuid,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return false;
+        }
     }
 }

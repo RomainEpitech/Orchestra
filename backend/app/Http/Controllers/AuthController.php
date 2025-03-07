@@ -146,4 +146,43 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Logout user and revoke current token
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $token = $request->bearerToken();
+            
+            $success = $this->authService->logout($user, $token);
+            
+            // Logger l'événement de déconnexion même si le token n'a pas été trouvé
+            logger()->info('User logout attempt', [
+                'user_uuid' => $user->uuid,
+                'user_email' => $user->email,
+                'successful' => $success,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+
+            return response()->json([
+                'message' => 'Déconnexion réussie'
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Logout failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Une erreur est survenue lors de la déconnexion',
+                'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
+            ], 500);
+        }
+    }
 }
