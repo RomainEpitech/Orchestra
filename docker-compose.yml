@@ -43,7 +43,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: php artisan queue:work --queue=emails,default --tries=3 --timeout=90 --sleep=3 --max-time=3600 --max-jobs=1000
+    command: php artisan queue:work --queue=security,emails,default --tries=3 --timeout=90 --sleep=3 --max-time=3600 --max-jobs=1000
     volumes:
       - ./backend:/var/www/html
       - ./logs:/var/www/logs
