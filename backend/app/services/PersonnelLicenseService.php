@@ -74,23 +74,7 @@ class PersonnelLicenseService
      */
     protected function sendWelcomeEmail(User $user, string $temporaryPassword): void
     {
-        try {
-            Mail::to($user->email)
-                ->send(new NewLicenseInvitation($user, $temporaryPassword));
-            
-            // Log du succès de l'envoi
-            logger()->info('License welcome email sent', [
-                'user_email' => $user->email,
-                'enterprise_name' => $user->enterprise->name
-            ]);
-        } catch (\Exception $e) {
-            // Log de l'erreur sans bloquer le processus
-            logger()->error('Failed to send license welcome email', [
-                'user_email' => $user->email,
-                'enterprise_name' => $user->enterprise->name,
-                'error' => $e->getMessage()
-            ]);
-        }
+        \App\Jobs\SendLicenseEmail::dispatch($user, $temporaryPassword);
     }
 
     /**

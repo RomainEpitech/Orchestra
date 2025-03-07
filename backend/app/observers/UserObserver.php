@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class UserObserver
 {
     /**
-     * Service de journalisation système
+     * Journal log service
      *
      * @var SystemLoggerService
      */
@@ -31,10 +31,8 @@ class UserObserver
     public function created(User $user): void
     {
         try {
-            // Charger les relations nécessaires
             $user->load(['enterprise', 'role']);
             
-            // Déterminer si l'utilisateur est une licence ou le propriétaire
             $isOwner = $user->isOwner();
             $eventType = $isOwner ? 'OWNER_CREATED' : 'CREATED';
             
@@ -63,7 +61,6 @@ class UserObserver
     public function updated(User $user): void
     {
         try {
-            // Ne logger que si les attributs importants ont changé
             $importantAttributes = ['firstname', 'lastname', 'email', 'role_uuid', 'enterprise_uuid'];
             
             if ($user->wasChanged($importantAttributes)) {
@@ -71,20 +68,17 @@ class UserObserver
                     $user->getChanges(),
                     array_flip($importantAttributes)
                 );
-                
-                // Si le rôle a changé, charger l'ancien et le nouveau rôle
+
                 if ($user->wasChanged('role_uuid') && $user->role) {
                     $oldRoleUuid = $user->getOriginal('role_uuid');
                     $newRoleName = $user->role->name;
                     
-                    // Ajouter des informations sur le changement de rôle
                     $changedAttributes['role_change'] = [
                         'from_uuid' => $oldRoleUuid,
                         'to_uuid' => $user->role_uuid,
                         'to_name' => $newRoleName
                     ];
                     
-                    // Logger également un événement spécifique de changement de rôle
                     $this->logger->logRoleEvent('ASSIGNED', [
                         'user_uuid' => $user->uuid,
                         'user_email' => $user->email,
