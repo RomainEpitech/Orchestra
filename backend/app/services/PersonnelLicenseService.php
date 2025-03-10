@@ -177,7 +177,7 @@ class PersonnelLicenseService
                     'name' => $user->role->name,
                     'color_hex' => $user->role->color_hex,
                 ] : null,
-                'created_at' => $user->created_at,
+                'created_at' => $user->created_at->format('Y-m-d'),
             ];
         })->toArray();
     }
