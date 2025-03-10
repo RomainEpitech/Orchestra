@@ -29,6 +29,7 @@ class RoleSeeder extends Seeder
                 ],
             'color_hex' => '#FF5722',
             'is_shared' => true,
+            'hierarchy_level' => 1
         ]);
 
         // Rôle employé (partagé par défaut)
@@ -48,6 +49,7 @@ class RoleSeeder extends Seeder
                 ],
             'color_hex' => '#4CAF50',
             'is_shared' => true,
+            'hierarchy_level' => 6
         ]);
     }
 }

@@ -83,7 +83,7 @@ restore: ## MySQL DB Restore [DATA]
 
 dev-back: ## Backend service start [DEV]
 	@echo "🚀 Démarrage de l'environnement de développement backend..."
-	$(DC) up -d backend db phpmyadmin nginx
+	$(DC) up -d backend db phpmyadmin nginx queue-worker-high queue-worker-low
 	@echo "⏳ Attente du démarrage de la base de données..."
 	sleep 5
 	@echo "🔄 Exécution des migrations..."
