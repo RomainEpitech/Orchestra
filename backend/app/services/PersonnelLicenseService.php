@@ -181,4 +181,33 @@ class PersonnelLicenseService
             ];
         })->toArray();
     }
+
+    /**
+     * Get single licence (user) from enterprise
+     * 
+     * @param string $userUuid
+     * @param string $enterpriseUuid
+     * @return array
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getLicence(string $userUuid, string $enterpriseUuid): array
+    {
+        $user = User::where('uuid', $userUuid)
+            ->where('enterprise_uuid', $enterpriseUuid)
+            ->with('role')
+            ->firstOrFail();
+        
+        return [
+            'uuid' => $user->uuid,
+            'firstname' => $user->firstname,
+            'lastname' => $user->lastname,
+            'email' => $user->email,
+            'role' => $user->role ? [
+                'uuid' => $user->role->uuid,
+                'name' => $user->role->name,
+                'color_hex' => $user->role->color_hex,
+            ] : null,
+            'created_at' => $user->created_at->format('Y-m-d'),
+        ];
+    }
 }

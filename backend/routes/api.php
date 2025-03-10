@@ -20,7 +20,11 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     
     Route::middleware([CheckModuleAuthority::parameters('personnel', 'read')])
-        ->get('/personnel/licence', [PersonnelModuleController::class, 'getAllLicenses']);
+        ->group(function () {
+            Route::get('/personnel/licence', [PersonnelModuleController::class, 'getAllLicenses']);
+            Route::get('/personnel/licence/{userUuid}', [PersonnelModuleController::class, 'getUserLicense']);
+        });
+
     Route::middleware([CheckModuleAuthority::parameters('personnel', 'create')])
         ->post('/personnel/licence', [PersonnelModuleController::class, 'createLicense']);
     Route::middleware([CheckModuleAuthority::parameters('personnel', 'delete')])

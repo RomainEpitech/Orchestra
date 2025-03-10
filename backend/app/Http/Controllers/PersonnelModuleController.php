@@ -149,4 +149,25 @@ class PersonnelModuleController extends Controller
             'licenses' => $licenses
         ]);
     }
+
+    public function getUserLicense(Request $request, string $userUuid): JsonResponse
+    {
+        $enterpriseUuid = $request->user()->enterprise_uuid;
+        
+        $personnelLicenseService = app(PersonnelLicenseService::class);
+        
+        try {
+            $license = $personnelLicenseService->getLicence($userUuid, $enterpriseUuid);
+            
+            return response()->json([
+                'success' => true,
+                'license' => $license
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'License not found'
+            ], 404);
+        }
+    }
 }
