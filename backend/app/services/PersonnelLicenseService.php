@@ -8,7 +8,6 @@ use App\Exceptions\ModuleLimitExceededException;
 use App\Models\Enterprise;
 use App\Utils\ModuleLimiter;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PersonnelLicenseService
@@ -153,5 +152,33 @@ class PersonnelLicenseService
             'deleted_by_owner' => $isOwner,
             'enterprise_uuid' => $enterpriseUuid
         ];
+    }
+
+    /**
+     * Get all licenses (users) for an enterprise
+     *
+     * @param string $enterpriseUuid
+     * @return array
+     */
+    public function getAllLicenses(string $enterpriseUuid): array
+    {
+        $users = User::where('enterprise_uuid', $enterpriseUuid)
+            ->with('role')
+            ->get();
+        
+        return $users->map(function ($user) {
+            return [
+                'uuid' => $user->uuid,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'role' => $user->role ? [
+                    'uuid' => $user->role->uuid,
+                    'name' => $user->role->name,
+                    'color_hex' => $user->role->color_hex,
+                ] : null,
+                'created_at' => $user->created_at,
+            ];
+        })->toArray();
     }
 }

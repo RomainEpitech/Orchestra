@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ModuleLimitExceededException;
 use App\Models\Module;
+use App\Models\User;
 use App\Services\PersonnelLicenseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -126,5 +127,26 @@ class PersonnelModuleController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
+    }
+
+    /**
+     * Get all enterprise collaborators licenses
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getAllLicenses(Request $request): JsonResponse
+    {
+        // Get the enterprise UUID from the authenticated user
+        $enterpriseUuid = $request->user()->enterprise_uuid;
+        
+        // Use the service to get all licenses for this enterprise
+        $personnelLicenseService = app(PersonnelLicenseService::class);
+        $licenses = $personnelLicenseService->getAllLicenses($enterpriseUuid);
+        
+        return response()->json([
+            'success' => true,
+            'licenses' => $licenses
+        ]);
     }
 }
