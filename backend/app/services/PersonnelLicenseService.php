@@ -6,6 +6,7 @@ use App\Mail\NewLicenseInvitation;
 use App\Models\User;
 use App\Exceptions\ModuleLimitExceededException;
 use App\Models\Enterprise;
+use App\Models\Role;
 use App\Utils\ModuleLimiter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -208,6 +209,111 @@ class PersonnelLicenseService
                 'color_hex' => $user->role->color_hex,
             ] : null,
             'created_at' => $user->created_at->format('Y-m-d'),
+        ];
+    }
+
+    /**
+     * Update a user license in the enterprise
+     *
+     * @param string $userUuid
+     * @param array $data
+     * @param string $adminUuid
+     * @param string $enterpriseUuid
+     * @return array
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \App\Exceptions\PermissionDeniedException
+     */
+    public function updateLicense(string $userUuid, array $data, string $adminUuid, string $enterpriseUuid): array
+    {
+        $admin = User::where('uuid', $adminUuid)
+            ->with('role')
+            ->firstOrFail();
+        
+        if (!$admin->role) {
+            throw new \App\Exceptions\PermissionDeniedException(
+                'You do not have a role assigned'
+            );
+        }
+
+        $user = User::where('uuid', $userUuid)
+            ->where('enterprise_uuid', $enterpriseUuid)
+            ->with('role')
+            ->firstOrFail();
+        
+        if ($userUuid === $adminUuid) {
+            throw new \App\Exceptions\PermissionDeniedException(
+                'You cannot modify your own license as an administrator'
+            );
+        }
+        
+        // Vérifier si l'admin a une hiérarchie suffisante pour modifier cet utilisateur
+        if ($user->role && !$admin->role->hasHigherOrEqualHierarchyThan($user->role)) {
+            throw new \App\Exceptions\PermissionDeniedException(
+                'You cannot modify a user with a higher hierarchy level than yours'
+            );
+        }
+        
+        // Si mise à jour de rôle, vérifier que l'admin ne peut pas attribuer un rôle supérieur au sien
+        if (isset($data['role_uuid']) && $data['role_uuid'] !== $user->role_uuid) {
+            $newRole = Role::where('uuid', $data['role_uuid'])->firstOrFail();
+            if (!$admin->role->hasHigherOrEqualHierarchyThan($newRole)) {
+                throw new \App\Exceptions\PermissionDeniedException(
+                    'You cannot assign a role with a higher hierarchy level than yours'
+                );
+            }
+        }
+        
+        $originalData = $user->toArray();
+        $user->update($data);
+        $user = $user->fresh(['role', 'enterprise']);
+        
+        $changes = [];
+        foreach ($data as $key => $value) {
+            if (isset($originalData[$key]) && $originalData[$key] !== $value) {
+                $changes[$key] = [
+                    'from' => $originalData[$key],
+                    'to' => $value
+                ];
+            }
+        }
+        
+        $loggerService = app(SystemLoggerService::class);
+        $loggerService->logLicenseEvent('UPDATED', [
+            'uuid' => $user->uuid,
+            'email' => $user->email,
+            'fullname' => $user->firstname . ' ' . $user->lastname,
+            'enterprise_uuid' => $user->enterprise_uuid,
+            'enterprise_name' => $user->enterprise->name ?? 'Unknown',
+            'role_uuid' => $user->role_uuid,
+            'role_name' => $user->role->name ?? 'Unknown',
+            'admin_uuid' => $adminUuid,
+            'admin_email' => $admin->email ?? 'Unknown',
+            'admin_name' => $admin->firstname . ' ' . $admin->lastname,
+            'changed_attributes' => $changes,
+            'request_ip' => request()->ip(),
+            'request_user_agent' => request()->userAgent(),
+            'updated_at' => now()->toIso8601String()
+        ]);
+        
+        logger()->info('User license updated', [
+            'user_uuid' => $userUuid,
+            'admin_uuid' => $adminUuid,
+            'enterprise_uuid' => $enterpriseUuid,
+            'updated_fields' => array_keys($data)
+        ]);
+        
+        return [
+            'user' => [
+                'uuid' => $user->uuid,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'role_uuid' => $user->role_uuid,
+                'role_name' => $user->role->name ?? null,
+                'avatar' => $user->avatar,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ]
         ];
     }
 }

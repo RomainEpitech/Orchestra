@@ -170,4 +170,64 @@ class PersonnelModuleController extends Controller
             ], 404);
         }
     }
+
+    /**
+     * Update a user license in the enterprise
+     *
+     * @param Request $request
+     * @param string $userUuid
+     * @return JsonResponse
+     */
+    public function updateLicense(Request $request, string $userUuid): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'firstname' => 'sometimes|string|max:255',
+                'lastname' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . User::where('uuid', $userUuid)->first()->id,
+                'role_uuid' => 'sometimes|exists:roles,uuid',
+            ]);
+
+            return DB::transaction(function () use ($request, $validated, $userUuid) {
+                $adminUuid = $request->user()->uuid;
+                $enterpriseUuid = $request->user()->enterprise_uuid;
+                
+                $result = $this->licenseService->updateLicense(
+                    $userUuid,
+                    $validated,
+                    $adminUuid,
+                    $enterpriseUuid
+                );
+                
+                return response()->json([
+                    'message' => 'License updated successfully',
+                    'data' => $result
+                ]);
+            });
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'User not found or not part of your enterprise',
+            ], 404);
+        } catch (\App\Exceptions\PermissionDeniedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 403);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            logger()->error('License update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_uuid' => $userUuid
+            ]);
+            
+            return response()->json([
+                'message' => 'An error occurred during license update',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
 }
