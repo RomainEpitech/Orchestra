@@ -246,19 +246,21 @@ class PersonnelLicenseService
             );
         }
         
-        // Vérifier si l'admin a une hiérarchie suffisante pour modifier cet utilisateur
-        if ($user->role && !$admin->role->hasHigherOrEqualHierarchyThan($user->role)) {
+        // Vérifier si l'admin a une hiérarchie STRICTEMENT supérieure pour modifier cet utilisateur
+        if ($user->role && $admin->role->hierarchy_level >= $user->role->hierarchy_level) {
             throw new \App\Exceptions\PermissionDeniedException(
-                'You cannot modify a user with a higher hierarchy level than yours'
+                'You can only modify users with a strictly lower hierarchy level than yours'
             );
         }
         
-        // Si mise à jour de rôle, vérifier que l'admin ne peut pas attribuer un rôle supérieur au sien
+        // Si mise à jour de rôle, vérifier que l'admin ne peut pas attribuer un rôle supérieur OU ÉGAL au sien
         if (isset($data['role_uuid']) && $data['role_uuid'] !== $user->role_uuid) {
             $newRole = Role::where('uuid', $data['role_uuid'])->firstOrFail();
-            if (!$admin->role->hasHigherOrEqualHierarchyThan($newRole)) {
+            
+            // Vérifier si l'admin tente d'attribuer un rôle de hiérarchie supérieure ou égale à la sienne
+            if ($admin->role->hierarchy_level >= $newRole->hierarchy_level) {
                 throw new \App\Exceptions\PermissionDeniedException(
-                    'You cannot assign a role with a higher hierarchy level than yours'
+                    'You can only assign roles with a strictly lower hierarchy level than yours'
                 );
             }
         }
