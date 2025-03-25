@@ -55,6 +55,10 @@ build: ## Construit les images et exécute les migrations sans déployer [MAIN]
 	$(DC) run --rm backend php artisan migrate
 	@echo "✅ Build terminé avec succès"
 
+build-front: ## Build frontend for production [MAIN]
+	@echo "🏗️  Construction du frontend..."
+	cd web && ng build
+
 down: ## Arrête et supprime les conteneurs [MAIN]
 	@echo "🛑 Arrêt de l'application..."
 	$(DC) down
@@ -85,7 +89,7 @@ dev-back: ## Backend service start [DEV]
 	@echo "🚀 Démarrage de l'environnement de développement backend..."
 	$(DC) up -d backend db phpmyadmin nginx queue-worker-high queue-worker-low
 	@echo "⏳ Attente du démarrage de la base de données..."
-	sleep 5
+	sleep 2
 	@echo "🔄 Exécution des migrations..."
 	$(DC) exec backend php artisan migrate
 	@echo "✅ Backend démarrée sur http://localhost:8080"

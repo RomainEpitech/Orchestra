@@ -35,15 +35,4 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/personnel/licence/{userUuid}', [PersonnelModuleController::class, 'updateLicense']);
             Route::post('/personnel/licence/new-password/{userUuid}', [PersonnelModuleController::class, 'renewPassword']);
         });
-
-    // // [MODULE-ROLE]
-    // Route::middleware([CheckModuleAuthority::parameters('roles', 'read')])
-    //     ->group(function () {
-    //         Route::get('/roles/all', [RolesModuleController::class, 'getAllRoles']);
-    //         Route::get('/roles/{roleUuid}', [RolesModuleController::class, 'getRole']);
-    //     });
-    // Route::middleware([CheckModuleAuthority::parameters('roles', 'delete')])
-    //     ->delete('/roles/{roleUuid}', [RolesModuleController::class, 'deleteRole']);
-    // Route::middleware([CheckModuleAuthority::parameters('roles', 'create')])
-    //     ->post('/roles/role', [RolesModuleController::class, 'createRole']);
 });
