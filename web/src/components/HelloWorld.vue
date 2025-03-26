@@ -1,3 +1,6 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-</script>
+<template>
+  <div>
+    <h1>Dashboard Personnel</h1>
+    <router-link to="/">Retour au Dashboard Principal</router-link>
+  </div>
+</template>
