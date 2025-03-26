@@ -1,4 +1,4 @@
-.PHONY: help up build down migrate clean clean-backup backup restore dev-back back-migration
+.PHONY: help up build down migrate clean clean-backup backup restore dev-back dev-front dev back-migration
 
 # Variables
 DC=docker compose
@@ -47,6 +47,7 @@ up: ## Démarre les conteneurs et initialise l'application [MAIN]
 	$(DC) exec backend php artisan migrate
 	@echo "✅ Application démarrée sur http://localhost:8080"
 	@echo "📊 phpMyAdmin disponible sur http://localhost:8081"
+	@echo "🖥️ Frontend disponible sur http://localhost:8082"
 
 build: ## Construit les images et exécute les migrations sans déployer [MAIN]
 	@echo "🏗️  Construction des images..."
@@ -54,10 +55,6 @@ build: ## Construit les images et exécute les migrations sans déployer [MAIN]
 	@echo "🔄 Exécution des migrations..."
 	$(DC) run --rm backend php artisan migrate
 	@echo "✅ Build terminé avec succès"
-
-build-front: ## Build frontend for production [MAIN]
-	@echo "🏗️  Construction du frontend..."
-	cd web && ng build
 
 down: ## Arrête et supprime les conteneurs [MAIN]
 	@echo "🛑 Arrêt de l'application..."
@@ -85,6 +82,17 @@ backup: ## MySQL DB Backup [DATA]
 restore: ## MySQL DB Restore [DATA]
 	$(DC) exec -T backup sh -c "cd /opt/backup && chmod +x Restore.sh && ./Restore.sh"
 
+dev: ## Démarre le backend et le frontend pour le développement [DEV]
+	@echo "🚀 Démarrage de l'environnement de développement complet..."
+	$(DC) up -d backend db phpmyadmin nginx queue-worker-high queue-worker-low frontend-dev
+	@echo "⏳ Attente du démarrage de la base de données..."
+	sleep 2
+	@echo "🔄 Exécution des migrations..."
+	$(DC) exec backend php artisan migrate
+	@echo "✅ Backend démarré sur http://localhost:${BACKEND_PORT:-8080}"
+	@echo "✅ Frontend démarré sur http://localhost:${FRONTEND_PORT:-8082}"
+	@echo "📊 phpMyAdmin disponible sur http://localhost:${PHPMYADMIN_PORT:-8081}"
+
 dev-back: ## Backend service start [DEV]
 	@echo "🚀 Démarrage de l'environnement de développement backend..."
 	$(DC) up -d backend db phpmyadmin nginx queue-worker-high queue-worker-low
@@ -92,8 +100,8 @@ dev-back: ## Backend service start [DEV]
 	sleep 2
 	@echo "🔄 Exécution des migrations..."
 	$(DC) exec backend php artisan migrate
-	@echo "✅ Backend démarrée sur http://localhost:8080"
-	@echo "📊 phpMyAdmin disponible sur http://localhost:8081"
+	@echo "✅ Backend démarré sur http://localhost:${BACKEND_PORT:-8080}"
+	@echo "📊 phpMyAdmin disponible sur http://localhost:${PHPMYADMIN_PORT:-8081}"
 
 back-migration: ## Run SQL Migrations [DATA]
 	@docker-compose exec backend php artisan migrate
