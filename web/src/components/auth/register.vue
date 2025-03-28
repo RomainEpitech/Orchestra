@@ -233,84 +233,84 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import apiFetch from './../../utils/apiFetch';
+    import { defineComponent, ref } from 'vue';
+    import { useRouter } from 'vue-router';
+    import apiFetch from './../../utils/apiFetch';
 
-export default defineComponent({
-    name: 'Register',
-    setup() {
-        const router = useRouter();
-        const formData = ref({
-            enterprise_name: '',
-            first_name: '',
-            last_name: '',
-            email: '',
-            password: '',
-            confirm_password: ''
-        });
-        const loading = ref(false);
-        const errorMessage = ref('');
-        const showPassword = ref(false);
+    export default defineComponent({
+        name: 'Register',
+        setup() {
+            const router = useRouter();
+            const formData = ref({
+                enterprise_name: '',
+                first_name: '',
+                last_name: '',
+                email: '',
+                password: '',
+                confirm_password: ''
+            });
+            const loading = ref(false);
+            const errorMessage = ref('');
+            const showPassword = ref(false);
 
-        const validateForm = () => {
-            if (formData.value.password !== formData.value.confirm_password) {
-                errorMessage.value = 'Les mots de passe ne correspondent pas';
-                return false;
-            }
-            
-            if (formData.value.password.length < 8) {
-                errorMessage.value = 'Le mot de passe doit contenir au moins 8 caractères';
-                return false;
-            }
-            
-            return true;
-        };
-
-        const register = async () => {
-            if (!validateForm()) return;
-            
-            loading.value = true;
-            errorMessage.value = '';
-            
-            try {
-                const response = await apiFetch.post('/enterprise/register', {
-                    enterprise_name: formData.value.enterprise_name,
-                    first_name: formData.value.first_name,
-                    last_name: formData.value.last_name,
-                    email: formData.value.email,
-                    password: formData.value.password,
-                    confirm_password: formData.value.confirm_password
-                });
+            const validateForm = () => {
+                if (formData.value.password !== formData.value.confirm_password) {
+                    errorMessage.value = 'Les mots de passe ne correspondent pas';
+                    return false;
+                }
                 
-                router.push({ name: 'login' });
-            } catch (error: any) {
-                console.error('Registration failed', error);
-                if (error.status === 422) {
+                if (formData.value.password.length < 8) {
+                    errorMessage.value = 'Le mot de passe doit contenir au moins 8 caractères';
+                    return false;
+                }
+                
+                return true;
+            };
+
+            const register = async () => {
+                if (!validateForm()) return;
+                
+                loading.value = true;
+                errorMessage.value = '';
+                
+                try {
+                    const response = await apiFetch.post('/enterprise/register', {
+                        enterprise_name: formData.value.enterprise_name,
+                        first_name: formData.value.first_name,
+                        last_name: formData.value.last_name,
+                        email: formData.value.email,
+                        password: formData.value.password,
+                        confirm_password: formData.value.confirm_password
+                    });
+                    
                     router.push({ name: 'login' });
-                    return;
+                } catch (error: any) {
+                    console.error('Registration failed', error);
+                    if (error.status === 422) {
+                        router.push({ name: 'login' });
+                        return;
+                    }
+                    
+                    if (error.errors && Object.keys(error.errors).length > 0) {
+                        const firstError = Object.values(error.errors)[0];
+                        errorMessage.value = Array.isArray(firstError) ? firstError[0] : String(firstError);
+                    } else {
+                        errorMessage.value = error.message || "Une erreur s'est produite lors de l'inscription";
+                    }
+                } finally {
+                    loading.value = false;
                 }
-                
-                if (error.errors && Object.keys(error.errors).length > 0) {
-                    const firstError = Object.values(error.errors)[0];
-                    errorMessage.value = Array.isArray(firstError) ? firstError[0] : String(firstError);
-                } else {
-                    errorMessage.value = error.message || "Une erreur s'est produite lors de l'inscription";
-                }
-            } finally {
-                loading.value = false;
-            }
-        };
-    
-        return {
-            formData,
-            loading,
-            errorMessage,
-            showPassword,
-            register
-        };
-    }
-});
+            };
+        
+            return {
+                formData,
+                loading,
+                errorMessage,
+                showPassword,
+                register
+            };
+        }
+    });
 </script>
 
 <style scoped>
