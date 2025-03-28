@@ -1,30 +1,37 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '../components/dashboard.vue';
-import Login from '../components/auth/login.vue';
-import Register from '../components/auth/register.vue';
+import dashboard from '@/components/dashboard.vue';
+import login from '@/components/auth/login.vue';
+import register from '@/components/auth/register.vue';
+import notFound from '@/components/errors/notFound.vue';
 
 const routes = [
     { 
         path: '/login', 
-        component: Login,
+        component: login,
         name: 'login',
         meta: { requiresAuth: false }
     },
     { 
         path: '/register', 
-        component: Register,
+        component: register,
         name: 'register',
         meta: { requiresAuth: false }
     },
     { 
         path: '/dashboard', 
-        component: Dashboard,
+        component: dashboard,
         name: 'dashboard',
         meta: { requiresAuth: true }
     },
     {
         path: '/',
         redirect: '/dashboard'
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: notFound,
+        meta: { requiresAuth: false }
     }
 ];
 
@@ -39,7 +46,7 @@ router.beforeEach((to, _from, next) => {
     
     if (requiresAuth && !hasToken) {
         next({ name: 'login' });
-    } else if (to.path === '/login' || to.path === '/register' && hasToken) {
+    } else if (to.path === '/login' && hasToken) {
         next({ name: 'dashboard' });
     } else {
         next();
