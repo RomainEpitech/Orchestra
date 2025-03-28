@@ -43,16 +43,16 @@ class PersonnelModuleController extends Controller
                 );
                 
                 return response()->json([
-                    'message' => 'New license created successfully',
+                    'message' => __('personnel.license_created'),
                     'data' => $result
-                ], 201);
+                ], 201);                
             });
         } catch (ModuleLimitExceededException $e) {
             // Récupérer les informations du module personnel
             $personnelModule = Module::where('key', 'personnel')->first();
             
             return response()->json([
-                'message' => 'User limit reached',
+                'message' => __('personnel.user_limit_reached'),
                 'error' => [
                     'type' => 'module_limit_exceeded',
                     'module' => 'personnel',
@@ -66,7 +66,7 @@ class PersonnelModuleController extends Controller
             ], 403); // 403 Forbidden est approprié pour les limitations
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Validation failed',
+                'message' => __('validation.validation_failed'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -76,8 +76,8 @@ class PersonnelModuleController extends Controller
             ]);
             
             return response()->json([
-                'message' => 'An error occurred during license creation',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'message' => __('personnel.license_creation_error'),
+                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
             ], 500);
         }
     }
@@ -103,13 +103,13 @@ class PersonnelModuleController extends Controller
                 );
                 
                 return response()->json([
-                    'message' => 'License deleted successfully',
+                    'message' => __('personnel.license_deleted'),
                     'data' => $result
                 ]);
             });
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'User not found or not part of your enterprise',
+                'message' => __('personnel.user_not_found'),
             ], 404);
         } catch (\App\Exceptions\PermissionDeniedException $e) {
             return response()->json([
@@ -123,8 +123,8 @@ class PersonnelModuleController extends Controller
             ]);
             
             return response()->json([
-                'message' => 'An error occurred during license deletion',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'message' => __('personnel.license_deletion_error'),
+                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
             ], 500);
         }
     }
@@ -166,7 +166,7 @@ class PersonnelModuleController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'License not found'
+                'message' => __('personnel.license_not_found')
             ], 404);
         }
     }
@@ -200,13 +200,13 @@ class PersonnelModuleController extends Controller
                 );
                 
                 return response()->json([
-                    'message' => 'License updated successfully',
+                    'message' => __('personnel.license_updated'),
                     'data' => $result
                 ]);
             });
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'User not found or not part of your enterprise',
+                'message' => __('personnel.user_not_found'),
             ], 404);
         } catch (\App\Exceptions\PermissionDeniedException $e) {
             return response()->json([
@@ -214,7 +214,7 @@ class PersonnelModuleController extends Controller
             ], 403);
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Validation failed',
+                'message' => __('validation.validation_failed'),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -225,8 +225,8 @@ class PersonnelModuleController extends Controller
             ]);
             
             return response()->json([
-                'message' => 'An error occurred during license update',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'message' => __('personnel.license_update_error'),
+                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
             ], 500);
         }
     }

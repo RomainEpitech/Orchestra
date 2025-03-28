@@ -1,5 +1,6 @@
 <template>
     <div class="min-h-screen flex items-center justify-center overflow-hidden relative">
+        <!-- Fond et animations cosmiques (inchangés) -->
         <div class="fixed inset-0" style="background: radial-gradient(circle at 50% 50%, #0f172a 0%, #000 100%)">
             <div 
                 class="absolute inset-0"
@@ -49,6 +50,21 @@
                         Rejoignez-nous pour accéder à toutes les fonctionnalités
                     </p>
                 </div>
+                
+                <!-- Section des erreurs - Affichage amélioré avec des cartes individuelles -->
+                <div v-if="validationErrors.length > 0" class="mb-6 space-y-2">
+                    <div v-for="(error, index) in validationErrors" :key="index" 
+                        class="flex items-start p-3 bg-red-900/40 border border-red-800/70 rounded-lg text-sm backdrop-blur-sm animate-fadeIn">
+                        <!-- Icône d'erreur -->
+                        <div class="flex-shrink-0 mr-2 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <!-- Message d'erreur -->
+                        <div class="text-red-300 flex-1">{{ error }}</div>
+                    </div>
+                </div>
             
                 <form class="space-y-4" @submit.prevent="register">
                     <div>
@@ -61,6 +77,7 @@
                                 name="enterprise_name"
                                 type="text"
                                 v-model="formData.enterprise_name"
+                                :class="{'border-red-500 focus:ring-red-500': hasFieldError('enterprise_name')}"
                                 required
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Nom de votre entreprise"
@@ -82,6 +99,7 @@
                                     name="first_name"
                                     type="text"
                                     v-model="formData.first_name"
+                                    :class="{'border-red-500 focus:ring-red-500': hasFieldError('first_name')}"
                                     required
                                     class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
                                     placeholder="Votre prénom"
@@ -102,6 +120,7 @@
                                     name="last_name"
                                     type="text"
                                     v-model="formData.last_name"
+                                    :class="{'border-red-500 focus:ring-red-500': hasFieldError('last_name')}"
                                     required
                                     class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
                                     placeholder="Votre nom"
@@ -123,6 +142,7 @@
                                 name="email"
                                 type="email"
                                 v-model="formData.email"
+                                :class="{'border-red-500 focus:ring-red-500': hasFieldError('email')}"
                                 required
                                 autocomplete="email"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
@@ -144,6 +164,7 @@
                                 name="password"
                                 :type="showPassword ? 'text' : 'password'"
                                 v-model="formData.password"
+                                :class="{'border-red-500 focus:ring-red-500': hasFieldError('password')}"
                                 required
                                 autocomplete="new-password"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
@@ -178,6 +199,7 @@
                                 name="confirm_password"
                                 :type="showPassword ? 'text' : 'password'"
                                 v-model="formData.confirm_password"
+                                :class="{'border-red-500 focus:ring-red-500': hasFieldError('confirm_password')}"
                                 required
                                 autocomplete="new-password"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200"
@@ -187,10 +209,6 @@
                                 style="background: linear-gradient(90deg, rgba(139, 92, 246, 0) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(139, 92, 246, 0) 100%); background-size: 200% 100%; animation: shimmer 2s infinite;">
                             </div>
                         </div>
-                    </div>
-
-                    <div v-if="errorMessage" class="p-3 bg-red-900/50 border border-red-800 rounded-lg text-sm text-red-300">
-                        {{ errorMessage }}
                     </div>
 
                     <div>
@@ -250,17 +268,28 @@
                 confirm_password: ''
             });
             const loading = ref(false);
-            const errorMessage = ref('');
+            const validationErrors = ref<string[]>([]);
+            const errorFields = ref<Record<string, boolean>>({});
             const showPassword = ref(false);
 
+            const hasFieldError = (fieldName: string) => {
+                return errorFields.value[fieldName] === true;
+            };
+
             const validateForm = () => {
+                validationErrors.value = [];
+                errorFields.value = {};
+                
                 if (formData.value.password !== formData.value.confirm_password) {
-                    errorMessage.value = 'Les mots de passe ne correspondent pas';
+                    validationErrors.value.push('Les mots de passe ne correspondent pas');
+                    errorFields.value.password = true;
+                    errorFields.value.confirm_password = true;
                     return false;
                 }
                 
                 if (formData.value.password.length < 8) {
-                    errorMessage.value = 'Le mot de passe doit contenir au moins 8 caractères';
+                    validationErrors.value.push('Le mot de passe doit contenir au moins 8 caractères');
+                    errorFields.value.password = true;
                     return false;
                 }
                 
@@ -271,7 +300,8 @@
                 if (!validateForm()) return;
                 
                 loading.value = true;
-                errorMessage.value = '';
+                validationErrors.value = [];
+                errorFields.value = {};
                 
                 try {
                     const response = await apiFetch.post('/enterprise/register', {
@@ -286,16 +316,15 @@
                     router.push({ name: 'login' });
                 } catch (error: any) {
                     console.error('Registration failed', error);
-                    if (error.status === 422) {
-                        router.push({ name: 'login' });
-                        return;
-                    }
                     
                     if (error.errors && Object.keys(error.errors).length > 0) {
-                        const firstError = Object.values(error.errors)[0];
-                        errorMessage.value = Array.isArray(firstError) ? firstError[0] : String(firstError);
+                        Object.entries(error.errors).forEach(([field, messages]) => {
+                            const messageArray = Array.isArray(messages) ? messages : [String(messages)];
+                            validationErrors.value.push(messageArray[0]);
+                            errorFields.value[field] = true;
+                        });
                     } else {
-                        errorMessage.value = error.message || "Une erreur s'est produite lors de l'inscription";
+                        validationErrors.value.push(error.message || "Une erreur s'est produite lors de l'inscription");
                     }
                 } finally {
                     loading.value = false;
@@ -305,9 +334,11 @@
             return {
                 formData,
                 loading,
-                errorMessage,
+                validationErrors,
+                errorFields,
                 showPassword,
-                register
+                register,
+                hasFieldError
             };
         }
     });
@@ -332,5 +363,14 @@
     @keyframes float {
         0%, 100% { transform: translateY(0); opacity: 0; }
         50% { transform: translateY(-30px); opacity: 1; }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
     }
 </style>
