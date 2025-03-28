@@ -39,7 +39,7 @@ router.beforeEach((to, _from, next) => {
     
     if (requiresAuth && !hasToken) {
         next({ name: 'login' });
-    } else if (to.path === '/login' && hasToken) {
+    } else if (to.path === '/login' || to.path === '/register' && hasToken) {
         next({ name: 'dashboard' });
     } else {
         next();

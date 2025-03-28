@@ -14,7 +14,7 @@ interface ApiError {
 }
 
 const api: AxiosInstance = axios.create({
-    baseURL: (import.meta as any).env?.VITE_API_URL || '/api',
+    baseURL: 'http://localhost:8080/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
