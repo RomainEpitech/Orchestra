@@ -32,17 +32,6 @@
             />
         </div>
     
-        <template>
-            <div
-                class="absolute w-1 h-1 bg-violet-400/30 rounded-full"
-                :style="{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
-                    animation: `float ${3 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`
-                }"
-            />
-        </template>
-    
         <div class="relative z-10 w-full max-w-md mx-auto p-8">
             <div class="backdrop-blur-sm bg-gray-900/60 border border-gray-800 rounded-2xl shadow-xl relative overflow-hidden p-6">
                 <div 
