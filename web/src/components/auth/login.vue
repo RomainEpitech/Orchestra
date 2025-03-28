@@ -32,7 +32,7 @@
             />
         </div>
     
-        <template v-for="n in 10" :key="n">
+        <template>
             <div
                 class="absolute w-1 h-1 bg-violet-400/30 rounded-full"
                 :style="{
@@ -156,16 +156,6 @@
     import { defineComponent, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import apiFetch from './../../utils/apiFetch';
-    
-    interface LoginResponse {
-            token: string;
-            user: {
-            id: number;
-            email: string;
-            firstname?: string;
-            lastname?: string;
-        };
-    }
     
     export default defineComponent({
         setup() {
