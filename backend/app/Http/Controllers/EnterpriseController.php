@@ -50,13 +50,13 @@ class EnterpriseController extends Controller
                 unset($result['enterprise_object']);
                 
                 return response()->json([
-                    'message' => __('enterprise.created_successfully'),
+                    'message' => 'Enterprise and admin user created successfully',
                     'data' => $result
                 ], 201);
             });
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => __('validation.validation_failed'),
+                'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
             
@@ -87,7 +87,7 @@ class EnterpriseController extends Controller
             
             if (!$enterprise) {
                 return response()->json([
-                    'message' => __('enterprise.not_found')
+                    'message' => 'Enterprise not found'
                 ], 404);
             }
             
@@ -95,7 +95,7 @@ class EnterpriseController extends Controller
             $employeeCount = $user->enterprise->users()->count();
             
             return response()->json([
-                'message' => __('enterprise.retrieved_successfully'),
+                'message' => 'Enterprise retrieved successfully',
                 'data' => [
                     'enterprise' => [
                         'uuid' => $enterprise->uuid,

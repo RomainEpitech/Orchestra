@@ -35,12 +35,12 @@ class AuthController extends Controller
             $result = $this->authService->login($validated);
 
             return response()->json([
-                'message' => __('auth.login_successful'),
+                'message' => 'Login successful',
                 'data' => $result
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => __('auth.login_failed'),
+                'message' => 'Authentication failed',
                 'errors' => $e->errors()
             ], 401);
         } catch (\Exception $e) {
@@ -50,8 +50,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'message' => __('auth.error_occurred'),
-                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
+                'message' => 'An error occurred during authentication',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }
@@ -79,12 +79,12 @@ class AuthController extends Controller
             $result = $this->authService->updateProfile($user, $validated);
             
             return response()->json([
-                'message' => __('auth.profile_updated'),
+                'message' => 'Profil mis à jour avec succès',
                 'data' => $result
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => __('auth.profile_update_failed'),
+                'message' => 'La mise à jour du profil a échoué',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -94,8 +94,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'message' => __('auth.error_occurred'),
-                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
+                'message' => 'Une erreur est survenue lors de la mise à jour du profil',
+                'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
             ], 500);
         }
     }
@@ -117,8 +117,8 @@ class AuthController extends Controller
             
             if (!Hash::check($validated['current_password'], $user->password)) {
                 return response()->json([
-                    'message' => __('auth.current_password_incorrect'),
-                    'errors' => ['current_password' => [__('auth.current_password_incorrect')]]
+                    'message' => 'Le mot de passe actuel est incorrect',
+                    'errors' => ['current_password' => ['Le mot de passe actuel est incorrect']]
                 ], 422);
             }
 
@@ -126,12 +126,12 @@ class AuthController extends Controller
             $this->authService->changePassword($user, $validated['password'], false);
 
             return response()->json([
-                'message' => __('auth.password_changed'),
+                'message' => 'Mot de passe modifié avec succès',
                 'info' => 'Une confirmation a été envoyée par email'
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => __('auth.password_changed_failed'),
+                'message' => 'Le changement de mot de passe a échoué',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -141,8 +141,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'message' => __('auth.error_occurred'),
-                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
+                'message' => 'Une erreur est survenue lors du changement de mot de passe',
+                'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
             ], 500);
         }
     }
@@ -171,7 +171,7 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'message' => __('auth.logout_successful')
+                'message' => 'Déconnexion réussie'
             ]);
         } catch (\Exception $e) {
             logger()->error('Logout failed', [
@@ -180,8 +180,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'message' => __('auth.error_occurred'),
-                'error' => config('app.debug') ? $e->getMessage() : __('auth.internal_server_error')
+                'message' => 'Une erreur est survenue lors de la déconnexion',
+                'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
             ], 500);
         }
     }

@@ -9,24 +9,6 @@ use App\Http\Middleware\CheckModuleAuthority;
 
 Route::post('/enterprise/register', [EnterpriseController::class, 'store']);
 Route::post('/auth/login', [AuthController::class, 'login']);
-Route::get('/translations/{locale}', function ($locale) {
-    $supportedLocales = ['en', 'fr'];
-    if (!in_array($locale, $supportedLocales)) {
-        $locale = 'en';
-    }
-    
-    $translations = [];
-    $path = resource_path("lang/{$locale}");
-    
-    if (is_dir($path)) {
-        foreach (glob("{$path}/*.php") as $file) {
-            $name = basename($file, '.php');
-            $translations[$name] = require $file;
-        }
-    }
-    
-    return response()->json($translations);
-});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
