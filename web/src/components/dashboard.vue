@@ -1,9 +1,7 @@
 <template>
 	<div class="min-h-screen flex bg-gray-950 text-white">
-		<!-- Sidebar component reste séparé -->
 		<Sidebar @sidebar-toggle="handleSidebarToggle" />
 		
-		<!-- Contenu principal qui prend toute la place disponible -->
 		<div 
 			class="transition-all duration-300 fixed top-0 right-0 bottom-0 overflow-hidden flex flex-col"
 			:style="{ left: sidebarCollapsed ? '0' : '16rem' }"
@@ -19,15 +17,6 @@
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
 						</svg>
 						<span class="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center text-xs">2</span>
-					</button>
-					
-					<button 
-						@click="userMenuOpen = !userMenuOpen" 
-						class="md:hidden text-gray-400 hover:text-white transition-colors duration-200"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-						</svg>
 					</button>
 				</div>
 			</header>
