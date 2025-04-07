@@ -36,9 +36,7 @@
 				</div>
 				
 				<nav class="flex-1 py-4 overflow-y-auto">
-					<ul class="space-y-1 px-2">
-						<slot name="menu-items"></slot>
-					</ul>
+					<SidebarMenu />
 				</nav>
 				
 				<userProfileComponent @logout="handleLogout" />
@@ -79,11 +77,13 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import userProfileComponent from './userProfileComponent.vue';
+import SidebarMenu from './SidebarMenu.vue';
 
 export default defineComponent({
 	name: 'Sidebar',
 	components: {
-		userProfileComponent
+		userProfileComponent,
+		SidebarMenu
 	},
 	emits: ['sidebar-toggle', 'logout'],
 	
@@ -92,6 +92,7 @@ export default defineComponent({
 		const enterpriseData = ref({ name: 'Enterprise' });
 		
 		onMounted(() => {
+			// Récupérer les données utilisateur depuis le localStorage
 			const userString = localStorage.getItem('user');
 			if (userString) {
 				try {
@@ -129,12 +130,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.active-link {
-	background: linear-gradient(90deg, rgba(124, 58, 237, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
-	border-left: 3px solid #8b5cf6;
-	padding-left: calc(1rem - 3px);
-}
-
 ::-webkit-scrollbar {
 	width: 6px;
 }
