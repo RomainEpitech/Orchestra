@@ -3,7 +3,7 @@ import dashboard from '@/components/dashboard.vue';
 import login from '@/components/auth/login.vue';
 import register from '@/components/auth/register.vue';
 import notFound from '@/components/errors/notFound.vue';
-import unauthorizedAccess from '@/components/errors/notFound.vue';
+import unauthorizedAccess from '../components/errors/unauthorizedAccess.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -51,7 +51,7 @@ const routes = [
         meta: { 
             requiresAuth: true,
             module: 'personnel',
-            permission: 'read'
+            permission: 'attend'
         }
     },
     
