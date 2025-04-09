@@ -70,7 +70,7 @@ class AuthController extends Controller
             $rules = [
                 'firstname' => 'sometimes|string|max:255',
                 'lastname' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . $user->id,
+                'email' => 'sometimes|email|unique:users,email,' . $user->uuid . ',uuid',
                 'avatar' => 'sometimes|string',
             ];
             
