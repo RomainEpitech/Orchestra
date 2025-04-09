@@ -92,7 +92,6 @@ export default defineComponent({
 		const enterpriseData = ref({ name: 'Enterprise' });
 		
 		onMounted(() => {
-			// Récupérer les données utilisateur depuis le localStorage
 			const userString = localStorage.getItem('user');
 			if (userString) {
 				try {
