@@ -1,9 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import dashboard from '@/components/dashboard.vue';
+import type { RouteRecordRaw } from 'vue-router';
+import dashboard from '@/components/DashboardLayout.vue';
 import login from '@/components/auth/login.vue';
 import register from '@/components/auth/register.vue';
 import notFound from '@/components/errors/notFound.vue';
 import unauthorizedAccess from '../components/errors/unauthorizedAccess.vue';
+import Profile from '@/components/Profile.vue';
+import DashboardLayout from '@/components/DashboardLayout.vue';
+import UpdateUser from '@/components/updateUser.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -13,7 +17,7 @@ declare module 'vue-router' {
     }
 }
 
-const routes = [
+const routes: RouteRecordRaw[] = [
     // Routes publiques
     { 
         path: '/login', 
@@ -43,9 +47,9 @@ const routes = [
         meta: { requiresAuth: true }
     },
     
-    // // Module Personnel
+    // Module Personnel
     {
-        path: '/collaborateurs',
+        path: '/collaborateurs',    
         name: 'collaborateurs',
         component: login,
         meta: { 
@@ -54,10 +58,35 @@ const routes = [
             permission: 'attend'
         }
     },
-    
+    {
+        path: '/profile',
+        name: 'profile',
+        component: Profile,
+        meta: { requiresAuth: true }
+    },
     {
         path: '/',
-        redirect: '/dashboard'
+        component: DashboardLayout,
+        children: [
+            {
+                path: 'dashboard',
+                name: 'dashboard',
+                component: dashboard,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'profile',
+                name: 'profile',
+                component: Profile,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'profile/update',
+                name: 'profileupdate',
+                component: UpdateUser,
+                meta: { requiresAuth: true }
+            }
+        ]
     },
     {
         path: '/:pathMatch(.*)*',
