@@ -1,7 +1,6 @@
 <template>
     <div>
         <ul class="space-y-1 px-2">
-            <!-- Menu Dashboard (toujours visible) -->
             <li>
                 <router-link 
                     to="/dashboard" 
@@ -19,7 +18,6 @@
                 </router-link>
             </li>
             
-            <!-- Menus dynamiques basés sur les autorisations -->
             <li v-for="(module, moduleKey) in availableModules" :key="moduleKey">
                 <div 
                     @click="toggleModuleMenu(moduleKey)"
@@ -98,7 +96,6 @@
             onMounted(() => {
                 loadUserPermissions();
                 
-                // Ouvrir automatiquement le menu actif
                 const currentModule = findCurrentModuleFromRoute();
                 if (currentModule) {
                     openModuleMenus.value.add(currentModule);
