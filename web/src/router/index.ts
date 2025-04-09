@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
-import dashboard from '@/components/DashboardLayout.vue';
+import Dashboard from '@/components/Dashboard.vue';
 import login from '@/components/auth/login.vue';
 import register from '@/components/auth/register.vue';
 import notFound from '@/components/errors/notFound.vue';
@@ -35,7 +35,7 @@ const routes: RouteRecordRaw[] = [
     // Dashboard accessible à tous les utilisateurs authentifiés
     { 
         path: '/dashboard', 
-        component: dashboard,
+        component: Dashboard,
         name: 'dashboard',
         meta: { requiresAuth: true }
     },
@@ -71,7 +71,7 @@ const routes: RouteRecordRaw[] = [
             {
                 path: 'dashboard',
                 name: 'dashboard',
-                component: dashboard,
+                component: Dashboard,
                 meta: { requiresAuth: true }
             },
             {
