@@ -1,7 +1,8 @@
 <template>
     <div>
         <ul class="space-y-1 px-2">
-            <li>
+            <!-- Dashboard toujours visible (sauf si filtré par la recherche) -->
+            <li v-if="!hasSearch || matchesDashboard">
                 <router-link 
                     to="/dashboard" 
                     class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 hover:bg-gray-800"
@@ -18,7 +19,8 @@
                 </router-link>
             </li>
             
-            <li v-for="(module, moduleKey) in availableModules" :key="moduleKey">
+            <!-- Modules filtrés en fonction de la recherche -->
+            <li v-for="(module, moduleKey) in filteredModules" :key="moduleKey">
                 <div 
                     @click="toggleModuleMenu(moduleKey)"
                     class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 hover:bg-gray-800 cursor-pointer"
@@ -40,12 +42,13 @@
                     </div>
                 </div>
                 
+                <!-- Items de menu filtrés -->
                 <div 
-                    v-if="isModuleMenuOpen(moduleKey)"
+                    v-if="isModuleMenuOpen(moduleKey) || hasSearch"
                     class="mt-1 ml-5 space-y-1 transition-all duration-200"
                 >
                     <router-link 
-                        v-for="subItem in getModuleMenuItems(moduleKey)" 
+                        v-for="subItem in getFilteredMenuItems(moduleKey)" 
                         :key="subItem.path"
                         :to="subItem.path" 
                         class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-800 text-sm"
@@ -59,7 +62,8 @@
                 </div>
             </li>
             
-            <li v-if="hasSettingsAccess">
+            <!-- Paramètres toujours visible (sauf si filtré par la recherche) -->
+            <li v-if="(hasSettingsAccess && !hasSearch) || (hasSettingsAccess && matchesSettings)">
                 <router-link 
                     to="/parametres" 
                     class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 hover:bg-gray-800"
@@ -81,14 +85,21 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent, ref, computed, onMounted } from 'vue';
+    import { defineComponent, ref, computed, onMounted, PropType } from 'vue';
     import { useRoute } from 'vue-router';
     import { moduleDefinitions, moduleIcons } from './MenuDefinition';
+    import { SearchResults } from './SearchBar.vue';
 
     export default defineComponent({
         name: 'SidebarMenu',
+        props: {
+            searchResults: {
+                type: Object as PropType<SearchResults>,
+                default: undefined
+            }
+        },
         
-        setup() {
+        setup(props) {
             const route = useRoute();
             const openModuleMenus = ref<Set<string>>(new Set());
             const userPermissions = ref<any>({});
@@ -144,11 +155,44 @@
                 return userPermissions.value.enterprise?.read === true;
             });
             
-            const availableModules = computed(() => {
+            // Vérifier si on a une recherche active
+            const hasSearch = computed(() => {
+                return props.searchResults !== undefined;
+            });
+            
+            // Vérifier si le dashboard correspond à la recherche
+            const matchesDashboard = computed(() => {
+                if (!props.searchResults) return false;
+                
+                // Vérifier si "Tableau de bord" correspond à la recherche
+                return "Tableau de bord".toLowerCase().includes(props.searchResults?.modules.join('').toLowerCase()) || 
+                    props.searchResults?.items.includes('/dashboard');
+            });
+            
+            // Vérifier si les paramètres correspondent à la recherche
+            const matchesSettings = computed(() => {
+                if (!props.searchResults) return false;
+                
+                // Vérifier si "Paramètres" correspond à la recherche
+                return "Paramètres".toLowerCase().includes(props.searchResults?.modules.join('').toLowerCase()) || 
+                    props.searchResults?.items.includes('/parametres');
+            });
+            
+            // Modules filtrés en fonction de la recherche
+            const filteredModules = computed(() => {
                 const modules: Record<string, any> = {};
                 
                 for (const [key, module] of Object.entries(moduleDefinitions)) {
-                    if (hasModuleAccess(key)) {
+                    // Vérifier les permissions d'abord
+                    if (!hasModuleAccess(key)) continue;
+                    
+                    // S'il y a une recherche active, filtrer selon les résultats
+                    if (hasSearch.value && props.searchResults) {
+                        if (props.searchResults.modules.includes(key)) {
+                            modules[key] = module;
+                        }
+                    } else {
+                        // Pas de recherche, afficher tous les modules accessibles
                         modules[key] = module;
                     }
                 }
@@ -177,16 +221,29 @@
                 return moduleIcons[moduleKey as keyof typeof moduleIcons] || moduleIcons.default;
             };
             
-            const getModuleMenuItems = (moduleKey: string) => {
+            // Obtenir les éléments de menu filtrés pour un module
+            const getFilteredMenuItems = (moduleKey: string) => {
                 const module = moduleDefinitions[moduleKey];
                 if (!module) return [];
                 
-                return module.menuItems.filter(item => {
-                    if (!item.requiredPermission) return true;
+                let items = module.menuItems.filter(item => {
+                    // Vérifier d'abord les permissions
+                    if (item.requiredPermission) {
+                        const modulePermissions = userPermissions.value[module.permissionKey];
+                        if (!modulePermissions || !modulePermissions[item.requiredPermission]) {
+                            return false;
+                        }
+                    }
                     
-                    const modulePermissions = userPermissions.value[module.permissionKey];
-                    return modulePermissions && modulePermissions[item.requiredPermission] === true;
+                    // Si recherche active, filtrer par résultats
+                    if (hasSearch.value && props.searchResults) {
+                        return props.searchResults.items.includes(item.path);
+                    }
+                    
+                    return true;
                 });
+                
+                return items;
             };
             
             const isActiveRoute = (path: string) => {
@@ -194,14 +251,17 @@
             };
             
             return {
-                availableModules,
+                filteredModules,
                 hasSettingsAccess,
+                hasSearch,
+                matchesDashboard,
+                matchesSettings,
                 isActiveRoute,
                 toggleModuleMenu,
                 isModuleMenuOpen,
                 isModuleActive,
                 getModuleIcon,
-                getModuleMenuItems
+                getFilteredMenuItems
             };
         }
     });

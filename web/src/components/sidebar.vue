@@ -35,8 +35,11 @@
 					</button>
 				</div>
 				
+				<!-- Ajout du composant SearchBar -->
+				<SearchBar @search-update="updateSearchResults" />
+				
 				<nav class="flex-1 py-4 overflow-y-auto">
-					<SidebarMenu />
+					<SidebarMenu :search-results="searchResults" />
 				</nav>
 				
 				<userProfileComponent @logout="handleLogout" />
@@ -78,18 +81,21 @@
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import userProfileComponent from './userProfileComponent.vue';
 import SidebarMenu from './SidebarMenu.vue';
+import SearchBar, { SearchResults } from './SearchBar.vue';
 
 export default defineComponent({
 	name: 'Sidebar',
 	components: {
 		userProfileComponent,
-		SidebarMenu
+		SidebarMenu,
+		SearchBar
 	},
 	emits: ['sidebar-toggle', 'logout'],
 	
 	setup(_, { emit }) {
 		const collapsed = ref(false);
 		const enterpriseData = ref({ name: 'Enterprise' });
+		const searchResults = ref<SearchResults | undefined>(undefined);
 		
 		onMounted(() => {
 			const userString = localStorage.getItem('user');
@@ -118,11 +124,24 @@ export default defineComponent({
 			emit('logout');
 		};
 		
+		const updateSearchResults = (results: SearchResults | undefined) => {
+			searchResults.value = results;
+			
+			if (results && (results.modules.length > 0 || results.items.length > 0)) {
+				if (collapsed.value) {
+					collapsed.value = false;
+					emit('sidebar-toggle', collapsed.value);
+				}
+			}
+		};
+		
 		return {
 			collapsed,
 			enterpriseName,
+			searchResults,
 			toggleSidebar,
-			handleLogout
+			handleLogout,
+			updateSearchResults
 		};
 	}
 });
