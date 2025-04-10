@@ -87,7 +87,7 @@
 <script lang="ts">
     import { defineComponent, ref, computed, onMounted, PropType } from 'vue';
     import { useRoute } from 'vue-router';
-    import { moduleDefinitions, moduleIcons } from './MenuDefinition';
+    import { moduleDefinitions, moduleIcons } from '../../definitions/MenuDefinition';
     import { SearchResults } from './SearchBar.vue';
 
     export default defineComponent({

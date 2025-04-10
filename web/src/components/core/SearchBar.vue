@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch } from 'vue';
-import { moduleDefinitions } from './MenuDefinition';
+import { moduleDefinitions } from '../../definitions/MenuDefinition';
 
 export interface SearchResults {
     modules: string[];

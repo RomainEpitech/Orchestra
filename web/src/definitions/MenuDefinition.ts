@@ -26,43 +26,6 @@ export const moduleDefinitions: Record<string, ModuleDefinition> = {
                 title: 'Ajouter un collaborateur',
                 path: '/collaborateurs/ajouter',
                 requiredPermission: 'create'
-            },
-            {
-                title: 'Historique des modifications',
-                path: '/collaborateurs/historique',
-                requiredPermission: 'read'
-            }
-        ]
-    },
-    roles: {
-        name: 'Rôles et permissions',
-        permissionKey: 'roles',
-        menuItems: [
-            {
-                title: 'Gestion des rôles',
-                path: '/roles',
-                requiredPermission: 'read'
-            },
-            {
-                title: 'Permissions',
-                path: '/roles/permissions',
-                requiredPermission: 'read'
-            }
-        ]
-    },
-    enterprise: {
-        name: 'Mon entreprise',
-        permissionKey: 'enterprise',
-        menuItems: [
-            {
-                title: 'Informations',
-                path: '/entreprise',
-                requiredPermission: 'read'
-            },
-            {
-                title: 'Facturation',
-                path: '/entreprise/facturation',
-                requiredPermission: 'read'
             }
         ]
     }

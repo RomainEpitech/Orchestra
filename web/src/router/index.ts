@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
-import Dashboard from '@/components/Dashboard.vue';
+import Dashboard from '@/components/core/Dashboard.vue';
 import login from '@/components/auth/login.vue';
 import register from '@/components/auth/register.vue';
 import notFound from '@/components/errors/notFound.vue';
 import unauthorizedAccess from '../components/errors/unauthorizedAccess.vue';
-import Profile from '@/components/Profile.vue';
-import DashboardLayout from '@/components/DashboardLayout.vue';
-import UpdateUser from '@/components/updateUser.vue';
+import Profile from '@/components/user/Profile.vue';
+import DashboardLayout from '@/components/layouts/DashboardLayout.vue';
+import UpdateUser from '@/components/user/updateUser.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {

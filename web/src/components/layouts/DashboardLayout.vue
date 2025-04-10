@@ -50,7 +50,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import Sidebar from './sidebar.vue';
+import Sidebar from '../core/sidebar.vue';
 
 export default defineComponent({
 	name: 'DashboardLayout',

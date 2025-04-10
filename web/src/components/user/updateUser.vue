@@ -220,7 +220,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import apiFetch from '../utils/apiFetch';
+import apiFetch from '@/utils/apiFetch';
 
 export default defineComponent({
     name: 'UpdateProfile',
