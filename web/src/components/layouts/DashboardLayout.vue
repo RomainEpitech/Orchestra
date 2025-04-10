@@ -4,10 +4,32 @@
 		
 		<div 
 			class="transition-all duration-300 fixed top-0 right-0 bottom-0 overflow-hidden flex flex-col"
-			:style="{ left: sidebarCollapsed ? '0' : '16rem' }"
+			:style="{ 
+				left: sidebarCollapsed || isMobile ? '0' : '16rem' 
+			}"
 		>
 			<header class="bg-gray-900/60 backdrop-blur-sm border-b border-gray-800 h-16 flex items-center px-6">
-				<div class="flex-1 flex">
+				<div class="flex-1 flex items-center">
+					<button
+						v-if="sidebarCollapsed && isMobile"
+						@click="toggleSidebar"
+						class="mr-3 md:hidden text-gray-400 hover:text-white transition-colors duration-200"
+					>
+						<svg 
+							xmlns="http://www.w3.org/2000/svg" 
+							class="h-6 w-6" 
+							fill="none" 
+							viewBox="0 0 24 24" 
+							stroke="currentColor"
+						>
+							<path 
+								stroke-linecap="round" 
+								stroke-linejoin="round" 
+								stroke-width="2" 
+								d="M4 6h16M4 12h16M4 18h16" 
+							/>
+						</svg>
+					</button>
 					<h2 class="text-xl font-semibold">{{ pageTitle }}</h2>
 				</div>
 				
@@ -48,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Sidebar from '../core/sidebar.vue';
 
@@ -62,9 +84,27 @@ export default defineComponent({
 		const route = useRoute();
 		const userMenuOpen = ref(false);
 		const sidebarCollapsed = ref(false);
+		const isMobile = ref(false);
+		
+		const checkMobile = () => {
+			isMobile.value = window.innerWidth < 768;
+		};
+		
+		onMounted(() => {
+			checkMobile();
+			window.addEventListener('resize', checkMobile);
+		});
+		
+		onUnmounted(() => {
+			window.removeEventListener('resize', checkMobile);
+		});
 		
 		const handleSidebarToggle = (collapsed: boolean) => {
 			sidebarCollapsed.value = collapsed;
+		};
+		
+		const toggleSidebar = () => {
+			sidebarCollapsed.value = !sidebarCollapsed.value;
 		};
 		
 		const pageTitle = computed(() => {
@@ -73,10 +113,14 @@ export default defineComponent({
 			switch (routeName) {
 				case 'dashboard':
 					return 'Tableau de bord';
-				case 'collaborateurs':
+				case 'collaborators':
 					return 'Gestion des collaborateurs';
 				case 'parametres':
 					return 'Paramètres';
+				case 'profile':
+					return 'Mon profil';
+				case 'profileupdate':
+					return 'Modifier mon profil';
 				default:
 					return 'Dashboard';
 			}
@@ -86,7 +130,9 @@ export default defineComponent({
 			userMenuOpen,
 			pageTitle,
 			sidebarCollapsed,
-			handleSidebarToggle
+			isMobile,
+			handleSidebarToggle,
+			toggleSidebar
 		};
 	}
 });

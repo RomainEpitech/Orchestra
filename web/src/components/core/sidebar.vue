@@ -1,8 +1,18 @@
 <template>
 	<div class="h-screen flex flex-col overflow-hidden">
 		<div 
+			v-if="!collapsed" 
+			class="fixed inset-0 bg-black/50 z-10 md:hidden"
+			@click="toggleSidebar"
+		></div>
+		
+		<div 
 			class="fixed top-0 left-0 h-screen border-r border-gray-800 bg-gray-900/80 backdrop-blur-sm transition-all duration-300 ease-in-out z-20"
-			:class="{ 'w-64': !collapsed, 'w-0': collapsed }"
+			:class="{ 
+				'w-64 transform-none': !collapsed, 
+				'w-0 -translate-x-full': collapsed,
+				'md:translate-x-0': true
+			}"
 		>
 			<div class="h-full flex flex-col" :class="{ 'opacity-0': collapsed }">
 				<div class="p-4 flex items-center justify-between border-b border-gray-800">
@@ -35,7 +45,6 @@
 					</button>
 				</div>
 				
-				<!-- Ajout du composant SearchBar -->
 				<SearchBar @search-update="updateSearchResults" />
 				
 				<nav class="flex-1 py-4 overflow-y-auto">
@@ -109,7 +118,22 @@ export default defineComponent({
 					console.error('Failed to parse user data from localStorage:', error);
 				}
 			}
+			
+			if (window.innerWidth < 768) {
+				collapsed.value = true;
+			}
+			
+			window.addEventListener('resize', handleResize);
 		});
+		
+		const handleResize = () => {
+			if (window.innerWidth < 768) {
+				if (!collapsed.value) {
+					collapsed.value = true;
+					emit('sidebar-toggle', collapsed.value);
+				}
+			}
+		};
 		
 		const enterpriseName = computed(() => {
 			return enterpriseData.value?.name || 'Enterprise';
