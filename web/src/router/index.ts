@@ -8,6 +8,7 @@ import unauthorizedAccess from '../components/errors/unauthorizedAccess.vue';
 import Profile from '@/components/user/Profile.vue';
 import DashboardLayout from '@/components/layouts/DashboardLayout.vue';
 import UpdateUser from '@/components/user/updateUser.vue';
+import CollaboratorsList from '@/components/modules/personnel/collaboratorsList.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -39,24 +40,11 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboard',
         meta: { requiresAuth: true }
     },
-    
     {
         path: '/unauthorized',
         name: 'unauthorized',
         component: unauthorizedAccess,
         meta: { requiresAuth: true }
-    },
-    
-    // Module Personnel
-    {
-        path: '/collaborateurs',    
-        name: 'collaborateurs',
-        component: login,
-        meta: { 
-            requiresAuth: true,
-            module: 'personnel',
-            permission: 'attend'
-        }
     },
     {
         path: '/profile',
@@ -85,7 +73,14 @@ const routes: RouteRecordRaw[] = [
                 name: 'profileupdate',
                 component: UpdateUser,
                 meta: { requiresAuth: true }
-            }
+            },
+            // Module Personnel
+            {
+                path: 'collaborateurs',
+                name: 'collaborators',
+                component: CollaboratorsList,
+                meta: { requiresAuth: true }
+            },
         ]
     },
     {

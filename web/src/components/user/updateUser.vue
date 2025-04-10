@@ -343,6 +343,7 @@ export default defineComponent({
                     }
                     
                     router.push('/profile');
+                    window.location.reload();
                 } catch (apiError: any) {
                     console.error('Erreur API:', apiError);
                     if (apiError.status === 500 && apiError.error && apiError.error.includes('Unknown column \'id\'')) {
