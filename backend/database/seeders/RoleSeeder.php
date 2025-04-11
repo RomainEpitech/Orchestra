@@ -26,6 +26,12 @@ class RoleSeeder extends Seeder
                         'edit' => true,
                         'delete' => true,
                     ],
+                    'roles' => [
+                        'read' => true,
+                        'create' => true,
+                        'edit' => true,
+                        'delete' => true,
+                    ]
                 ],
             'color_hex' => '#FF5722',
             'is_shared' => true,
@@ -46,6 +52,12 @@ class RoleSeeder extends Seeder
                         'edit' => false,
                         'delete' => false,
                     ],
+                    'roles' => [
+                        'read' => false,
+                        'create' => false,
+                        'edit' => false,
+                        'delete' => false,
+                    ]
                 ],
             'color_hex' => '#4CAF50',
             'is_shared' => true,

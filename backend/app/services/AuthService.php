@@ -43,6 +43,7 @@ class AuthService
                     'uuid' => $user->role->uuid,
                     'name' => $user->role->name,
                     'authority' => $user->role->authority,
+                    'hierarchy' => $user->role->hierarchy_level,
                     'color_hex' => $user->role->color_hex,
                 ],
             ],
