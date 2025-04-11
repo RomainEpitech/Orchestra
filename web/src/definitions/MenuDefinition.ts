@@ -26,6 +26,22 @@ export const moduleDefinitions: Record<string, ModuleDefinition> = {
                 title: 'Ajouter un collaborateur',
                 path: '/collaborateurs/ajouter',
                 requiredPermission: 'create'
+            },
+        ]
+    },
+    roles: {
+        name: 'Gestion des roles',
+        permissionKey: 'roles',
+        menuItems: [
+            {
+                title: 'Liste des roles',
+                path: '/roles',
+                requiredPermission: 'read'
+            },
+            {
+                title: 'Créer un role',
+                path: '/roles/nouveau',
+                requiredPermission: 'create'
             }
         ]
     }

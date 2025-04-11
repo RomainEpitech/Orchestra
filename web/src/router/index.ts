@@ -10,6 +10,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout.vue';
 import UpdateUser from '@/components/user/updateUser.vue';
 import CollaboratorsList from '@/components/modules/personnel/collaboratorsList.vue';
 import AddCollaborator from '@/components/modules/personnel/AddCollaborator.vue';
+import RolesList from '@/components/modules/roles/RolesList.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -88,6 +89,13 @@ const routes: RouteRecordRaw[] = [
                 component: AddCollaborator,
                 meta: { requiresAuth: true }
             },
+            // Module Roles
+            {
+                path: 'roles',
+                name: 'roles',
+                component: RolesList,
+                meta: { requiresAuth: true }
+            }
         ]
     },
     {
