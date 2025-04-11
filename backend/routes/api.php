@@ -35,4 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/personnel/licence/{userUuid}', [PersonnelModuleController::class, 'updateLicense']);
             Route::post('/personnel/licence/new-password/{userUuid}', [PersonnelModuleController::class, 'renewPassword']);
         });
+    // [MODULE-ROLE]
+    Route::middleware([CheckModuleAuthority::parameters('roles', 'read')])
+        ->group(function() {
+            Route::get('/role/assignable', [RolesModuleController::class, 'getAssignableRoles']);
+            Route::get('/role/getAll', [RolesModuleController::class, 'getAllRoles']);
+        });
 });
