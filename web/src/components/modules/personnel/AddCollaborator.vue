@@ -146,6 +146,8 @@ interface Role {
     uuid: string;
     name: string;
     color_hex: string;
+    hierarchy_level: number;
+    is_shared: boolean;
 }
 
 export default defineComponent({
@@ -166,15 +168,14 @@ export default defineComponent({
             role_uuid: ''
         });
         
-        // Charger les rôles disponibles
         const loadRoles = async () => {
             isLoadingRoles.value = true;
             
             try {
-                const response = await apiFetch.get('/personnel/roles');
+                const response = await apiFetch.get('/role/assignable');
                 
-                if (response && response.success && response.roles) {
-                    roles.value = response.roles;
+                if (response && response.data) {
+                    roles.value = response.data;
                 } else {
                     throw new Error("Format de réponse inattendu");
                 }
@@ -198,20 +199,16 @@ export default defineComponent({
             validationErrors.value = [];
             errorFields.value = {};
             
-            // Validation du prénom
             if (!formData.value.firstname.trim()) {
                 validationErrors.value.push("Le prénom est requis");
                 errorFields.value.firstname = true;
             }
             
-            // Validation du nom
             if (!formData.value.lastname.trim()) {
                 validationErrors.value.push("Le nom est requis");
                 errorFields.value.lastname = true;
             }
-            
-            // Validation de l'email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!formData.value.email.trim()) {
                 validationErrors.value.push("L'email est requis");
                 errorFields.value.email = true;
@@ -237,8 +234,7 @@ export default defineComponent({
             try {
                 const response = await apiFetch.post('/personnel/licence', formData.value);
                 
-                if (response && response.success) {
-                    // Redirection vers la liste des collaborateurs avec un message de succès
+                if (response && response.data) {
                     router.push({ 
                         path: '/collaborateurs',
                         query: { 
@@ -252,9 +248,8 @@ export default defineComponent({
             } catch (error: any) {
                 console.error('Erreur lors de la création du collaborateur:', error);
                 
-                if (error.errors && Object.keys(error.errors).length > 0) {
-                    // Traiter les erreurs de validation spécifiques aux champs
-                    Object.entries(error.errors).forEach(([field, messages]) => {
+                if (error.response && error.response.data && error.response.data.errors) {
+                    Object.entries(error.response.data.errors).forEach(([field, messages]) => {
                         errorFields.value[field] = true;
                         const messageArray = Array.isArray(messages) ? messages : [String(messages)];
                         messageArray.forEach(msg => {
@@ -262,7 +257,6 @@ export default defineComponent({
                         });
                     });
                 } else {
-                    // Erreur générale
                     validationErrors.value.push(error.message || "Une erreur est survenue lors de la création du collaborateur");
                 }
             } finally {
