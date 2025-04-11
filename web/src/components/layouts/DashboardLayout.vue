@@ -115,6 +115,10 @@ export default defineComponent({
 					return 'Tableau de bord';
 				case 'collaborators':
 					return 'Gestion des collaborateurs';
+				case 'collaboratorsNewLicense':
+					return 'Ajouter un collaborateur';
+				case 'roles':
+					return 'Gestion des roles';
 				case 'parametres':
 					return 'Paramètres';
 				case 'profile':
