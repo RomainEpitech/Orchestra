@@ -1,15 +1,12 @@
 <template>
     <div class="space-y-6">
-        <!-- En-tête avec titre -->
         <div>
             <h1 class="text-2xl font-bold text-white">Ajouter un collaborateur</h1>
             <p class="text-gray-400 mt-1">Créez un compte pour un nouveau membre de votre équipe</p>
         </div>
 
-        <!-- Formulaire -->
         <div class="bg-gray-800/40 backdrop-blur-sm border border-gray-700 rounded-lg p-6">
             <form @submit.prevent="submitForm" class="space-y-6">
-                <!-- Messages d'erreur -->
                 <div v-if="validationErrors.length > 0" class="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6">
                     <div class="flex">
                         <div class="flex-shrink-0">
@@ -28,7 +25,6 @@
                     </div>
                 </div>
 
-                <!-- Informations personnelles -->
                 <div>
                     <h2 class="text-lg font-medium text-white mb-4">Informations personnelles</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -68,7 +64,6 @@
                     </div>
                 </div>
 
-                <!-- Informations de compte -->
                 <div>
                     <h2 class="text-lg font-medium text-white mb-4">Informations de compte</h2>
                     <div class="space-y-6">
@@ -112,7 +107,6 @@
                     </div>
                 </div>
 
-                <!-- Boutons d'action -->
                 <div class="flex justify-end space-x-3 pt-6">
                     <router-link
                         to="/collaborateurs"
@@ -217,7 +211,6 @@ export default defineComponent({
                 errorFields.value.email = true;
             }
             
-            // Validation du rôle
             if (!formData.value.role_uuid) {
                 validationErrors.value.push("Veuillez sélectionner un rôle");
                 errorFields.value.role_uuid = true;
