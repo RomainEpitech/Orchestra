@@ -1,7 +1,6 @@
 <template>
     <div>
         <ul class="space-y-1 px-2">
-            <!-- Dashboard toujours visible (sauf si filtré par la recherche) -->
             <li v-if="!hasSearch || matchesDashboard">
                 <router-link 
                     to="/dashboard" 
@@ -19,7 +18,6 @@
                 </router-link>
             </li>
             
-            <!-- Modules filtrés en fonction de la recherche -->
             <li v-for="(module, moduleKey) in filteredModules" :key="moduleKey">
                 <div 
                     @click="toggleModuleMenu(moduleKey)"
@@ -62,7 +60,6 @@
                 </div>
             </li>
             
-            <!-- Paramètres toujours visible (sauf si filtré par la recherche) -->
             <li v-if="(hasSettingsAccess && !hasSearch) || (hasSettingsAccess && matchesSettings)">
                 <router-link 
                     to="/parametres" 
@@ -155,44 +152,35 @@
                 return userPermissions.value.enterprise?.read === true;
             });
             
-            // Vérifier si on a une recherche active
             const hasSearch = computed(() => {
                 return props.searchResults !== undefined;
             });
             
-            // Vérifier si le dashboard correspond à la recherche
             const matchesDashboard = computed(() => {
                 if (!props.searchResults) return false;
                 
-                // Vérifier si "Tableau de bord" correspond à la recherche
                 return "Tableau de bord".toLowerCase().includes(props.searchResults?.modules.join('').toLowerCase()) || 
                     props.searchResults?.items.includes('/dashboard');
             });
             
-            // Vérifier si les paramètres correspondent à la recherche
             const matchesSettings = computed(() => {
                 if (!props.searchResults) return false;
                 
-                // Vérifier si "Paramètres" correspond à la recherche
                 return "Paramètres".toLowerCase().includes(props.searchResults?.modules.join('').toLowerCase()) || 
                     props.searchResults?.items.includes('/parametres');
             });
             
-            // Modules filtrés en fonction de la recherche
             const filteredModules = computed(() => {
                 const modules: Record<string, any> = {};
                 
                 for (const [key, module] of Object.entries(moduleDefinitions)) {
-                    // Vérifier les permissions d'abord
                     if (!hasModuleAccess(key)) continue;
                     
-                    // S'il y a une recherche active, filtrer selon les résultats
                     if (hasSearch.value && props.searchResults) {
                         if (props.searchResults.modules.includes(key)) {
                             modules[key] = module;
                         }
                     } else {
-                        // Pas de recherche, afficher tous les modules accessibles
                         modules[key] = module;
                     }
                 }
@@ -221,13 +209,11 @@
                 return moduleIcons[moduleKey as keyof typeof moduleIcons] || moduleIcons.default;
             };
             
-            // Obtenir les éléments de menu filtrés pour un module
             const getFilteredMenuItems = (moduleKey: string) => {
                 const module = moduleDefinitions[moduleKey];
                 if (!module) return [];
                 
                 let items = module.menuItems.filter(item => {
-                    // Vérifier d'abord les permissions
                     if (item.requiredPermission) {
                         const modulePermissions = userPermissions.value[module.permissionKey];
                         if (!modulePermissions || !modulePermissions[item.requiredPermission]) {
@@ -235,7 +221,6 @@
                         }
                     }
                     
-                    // Si recherche active, filtrer par résultats
                     if (hasSearch.value && props.searchResults) {
                         return props.searchResults.items.includes(item.path);
                     }
@@ -247,7 +232,36 @@
             };
             
             const isActiveRoute = (path: string) => {
-                return route.path === path || route.path.startsWith(`${path}/`);
+                if (route.path === path) {
+                    return true;
+                }
+
+                if (path.endsWith('/') && route.path.startsWith(path)) {
+                    return true;
+                }
+                
+                const pathSegments = path.split('/');
+                const routeSegments = route.path.split('/');
+                
+                if (routeSegments.length < pathSegments.length) {
+                    return false;
+                }
+                
+                for (let i = 0; i < pathSegments.length; i++) {
+                    if (pathSegments[i] !== routeSegments[i]) {
+                        return false;
+                    }
+                }
+
+                if (routeSegments.length > pathSegments.length) {
+                    const nextSegment = routeSegments[pathSegments.length];
+                    if (/^[0-9]+$/.test(nextSegment) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(nextSegment)) {
+                        return true;
+                    }
+                    return false;
+                }
+                
+                return true;
             };
             
             return {
