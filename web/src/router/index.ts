@@ -11,6 +11,7 @@ import UpdateUser from '@/components/user/updateUser.vue';
 import CollaboratorsList from '@/components/modules/personnel/collaboratorsList.vue';
 import AddCollaborator from '@/components/modules/personnel/AddCollaborator.vue';
 import RolesList from '@/components/modules/roles/RolesList.vue';
+import EditCollaborator from '@/components/modules/personnel/EditCollaborator.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -87,6 +88,12 @@ const routes: RouteRecordRaw[] = [
                 path: 'collaborateurs/ajouter',
                 name: 'collaboratorsNewLicense',
                 component: AddCollaborator,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'collaborateurs/modifier/:uuid',
+                name: 'collaboratorsEdit',
+                component: EditCollaborator,
                 meta: { requiresAuth: true }
             },
             // Module Roles

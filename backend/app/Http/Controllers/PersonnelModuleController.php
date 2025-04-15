@@ -184,7 +184,7 @@ class PersonnelModuleController extends Controller
             $validated = $request->validate([
                 'firstname' => 'sometimes|string|max:255',
                 'lastname' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . User::where('uuid', $userUuid)->first()->id,
+                'email' => 'sometimes|email|unique:users,email,' . User::where('uuid', $userUuid)->first()->uuid . ',uuid',
                 'role_uuid' => 'sometimes|exists:roles,uuid',
             ]);
 

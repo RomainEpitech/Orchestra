@@ -212,6 +212,10 @@ export default defineComponent({
                 loading.value = false;
             }
         };
+
+        const editCollaborator = (collaborator: Collaborator) => {
+            router.push(`/collaborateurs/modifier/${collaborator.uuid}`);
+        };
         
         onMounted(() => {
             loadCollaborators();
@@ -273,10 +277,6 @@ export default defineComponent({
             } catch {
                 return `rgba(0, 0, 0, ${alpha})`;
             }
-        };
-        
-        const editCollaborator = (collaborator: Collaborator) => {
-            router.push(`/collaborateurs/modifier/${collaborator.uuid}`);
         };
         
         return {
