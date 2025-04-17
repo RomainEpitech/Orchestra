@@ -52,4 +52,21 @@ class RoleService
             ->orderBy('hierarchy_level', 'asc')
             ->get();
     }
+
+    /**
+     * Récupère un rôle spécifique par son UUID
+     * 
+     * @param string $roleUuid UUID du rôle
+     * @param string $enterpriseUuid UUID de l'entreprise
+     * @return Role|null Le rôle ou null si non trouvé
+     */
+    public function getRoleByUuid(string $roleUuid, string $enterpriseUuid): ?Role
+    {
+        return Role::where(function ($query) use ($enterpriseUuid) {
+                $query->where('enterprise_uuid', $enterpriseUuid)
+                    ->orWhere('is_shared', true);
+            })
+            ->where('uuid', $roleUuid)
+            ->first();
+    }
 }

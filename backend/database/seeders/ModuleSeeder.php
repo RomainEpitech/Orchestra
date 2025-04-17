@@ -38,5 +38,19 @@ class ModuleSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        DB::table('modules')->insert([
+            'uuid' => Str::uuid()->toString(),
+            'name' => 'Roles',
+            'description' => 'Module de gestion de role des utilisateurs',
+            'key' => 'roles',
+            'is_core' => true,
+            'free_limits' => json_encode([
+                'roleLimit' => 5,
+            ]),
+            'price' => 120.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

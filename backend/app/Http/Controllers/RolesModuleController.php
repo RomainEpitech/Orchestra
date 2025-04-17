@@ -89,4 +89,53 @@ class RolesModuleController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Récupère un rôle spécifique par son UUID
+     *
+     * @param Request $request
+     * @param string $roleUuid
+     * @return JsonResponse
+     */
+    public function getRole(Request $request, string $roleUuid): JsonResponse
+    {
+        try {
+            $enterpriseUuid = $request->user()->enterprise_uuid;
+            $role = $this->roleService->getRoleByUuid($roleUuid, $enterpriseUuid);
+            
+            if (!$role) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Rôle non trouvé'
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Rôle récupéré avec succès',
+                'data' => [
+                    'uuid' => $role->uuid,
+                    'name' => $role->name,
+                    'color_hex' => $role->color_hex,
+                    'hierarchy_level' => $role->hierarchy_level,
+                    'is_shared' => $role->is_shared,
+                    'authority' => $role->authority,
+                    'created_at' => $role->created_at,
+                    'updated_at' => $role->updated_at
+                ]
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Failed to retrieve role', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'role_uuid' => $roleUuid
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération du rôle',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
 }

@@ -40,5 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
         ->group(function() {
             Route::get('/role/assignable', [RolesModuleController::class, 'getAssignableRoles']);
             Route::get('/role/getAll', [RolesModuleController::class, 'getAllRoles']);
+            Route::get('/role/{roleUuid}', [RolesModuleController::class, 'getRole']);
         });
 });

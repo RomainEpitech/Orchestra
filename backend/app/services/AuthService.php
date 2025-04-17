@@ -26,7 +26,21 @@ class AuthService
             ]);
         }
 
+        // Charger les relations nécessaires
         $user->load(['enterprise', 'role']);
+        
+        $activeModules = [];
+        if ($user->enterprise) {
+            $enterpriseModules = $user->enterprise->enterpriseModules()
+                ->with('module')
+                ->where('status', 'active')
+                ->get();
+            
+                $activeModules = $enterpriseModules->map(function ($enterpriseModule) {
+                    return $enterpriseModule->module->key;
+                })->toArray();
+        }
+        
         $token = $user->createToken('api-token');
 
         return [
@@ -38,6 +52,7 @@ class AuthService
                 'enterprise' => [
                     'uuid' => $user->enterprise->uuid,
                     'name' => $user->enterprise->name,
+                    'modules' => $activeModules,
                 ],
                 'role' => [
                     'uuid' => $user->role->uuid,

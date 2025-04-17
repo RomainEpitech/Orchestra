@@ -98,4 +98,9 @@ class Enterprise extends Model
     {
         return config('app.url') . '/' . $this->key;
     }
+
+    public function enterpriseModules()
+    {
+        return $this->hasMany(EnterpriseModule::class, 'enterprise_uuid', 'uuid');
+    }
 }
