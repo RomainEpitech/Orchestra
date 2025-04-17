@@ -12,6 +12,7 @@ import CollaboratorsList from '@/components/modules/personnel/collaboratorsList.
 import AddCollaborator from '@/components/modules/personnel/AddCollaborator.vue';
 import RolesList from '@/components/modules/roles/RolesList.vue';
 import EditCollaborator from '@/components/modules/personnel/EditCollaborator.vue';
+import EditRole from '@/components/modules/roles/EditRole.vue';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -101,7 +102,13 @@ const routes: RouteRecordRaw[] = [
                 path: 'roles',
                 name: 'roles',
                 component: RolesList,
-                meta: { requiresAuth: true }
+                meta: { requiresAuth: true, module: 'roles', permission: 'read' }
+            },
+            {
+                path: 'roles/:uuid',
+                name: 'roleEdit',
+                component: EditRole,
+                meta: { requiresAuth: true, module: 'roles', permission: 'read' }
             }
         ]
     },

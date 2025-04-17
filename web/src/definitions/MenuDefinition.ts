@@ -27,11 +27,6 @@ export const moduleDefinitions: Record<string, ModuleDefinition> = {
                 path: '/collaborateurs/ajouter',
                 requiredPermission: 'create'
             },
-            {
-                title: 'Editer un collaborateur',
-                path: 'collaborateurs/modifier/:uuid',
-                requiredPermission: 'read'
-            }
         ]
     },
     roles: {

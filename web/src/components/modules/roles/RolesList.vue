@@ -89,9 +89,6 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                 Type
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Utilisateurs
-                            </th>
                             <th scope="col" class="relative px-6 py-3">
                                 <span class="sr-only">Actions</span>
                             </th>
@@ -128,9 +125,6 @@
                                 <span v-else class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-violet-900/40 text-violet-300">
                                     Personnalisé
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                {{ role.users_count || 0 }} utilisateurs
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
@@ -263,7 +257,6 @@ export default defineComponent({
                 
                 if (response && response.data) {
                     roles.value = response.data;
-                    console.log('Rôles chargés:', roles.value);
                 } else {
                     throw new Error("Format de réponse inattendu");
                 }
