@@ -1,5 +1,6 @@
 <template>
     <div class="min-h-screen flex items-center justify-center overflow-hidden relative">
+        <!-- Background stylings restent inchangés -->
         <div class="fixed inset-0" style="background: radial-gradient(circle at 50% 50%, #0f172a 0%, #000 100%)">
             <div 
                 class="absolute inset-0"
@@ -103,21 +104,21 @@
                 <div>
                     <button
                         type="submit"
-                        :disabled="loading"
+                        :disabled="userStore.loading"
                         class="group relative w-full flex justify-center items-center px-4 py-3 text-sm font-medium rounded-lg overflow-hidden transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <span class="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 rounded-lg" />
                         <span class="absolute inset-0 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         
-                        <span v-if="loading" class="absolute left-4 flex items-center">
+                        <span v-if="userStore.loading" class="absolute left-4 flex items-center">
                             <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </span>
                         <span class="relative text-white flex items-center">
-                            {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
-                            <span v-if="!loading" class="ml-2 inline-block group-hover:translate-x-1 transition-transform duration-200">
+                            {{ userStore.loading ? 'Connexion en cours...' : 'Se connecter' }}
+                            <span v-if="!userStore.loading" class="ml-2 inline-block group-hover:translate-x-1 transition-transform duration-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M5 12h14"></path>
                                     <path d="M12 5l7 7-7 7"></path>
@@ -128,8 +129,8 @@
                 </div>
             </form>
             
-            <div v-if="errorMessage" class="mt-4 p-3 bg-red-900/50 border border-red-800 rounded-lg text-sm text-red-300">
-                {{ errorMessage }}
+            <div v-if="userStore.error" class="mt-4 p-3 bg-red-900/50 border border-red-800 rounded-lg text-sm text-red-300">
+                {{ userStore.error }}
             </div>
                 <div class="mt-6 text-center text-sm">
                     <span class="text-gray-400">Pas encore de compte?</span>
@@ -141,51 +142,37 @@
         </div>
     </div>
 </template>
+
 <script lang="ts">
-    import { defineComponent, ref } from 'vue';
-    import { useRouter } from 'vue-router';
-    import apiFetch from './../../utils/apiFetch';
-    
-    export default defineComponent({
-        setup() {
-            const router = useRouter();
-            const credentials = ref({
-                email: '',
-                password: '',
-            });
-            const loading = ref(false);
-            const errorMessage = ref('');
-    
-            const login = async () => {
-                loading.value = true;
-                errorMessage.value = '';
-                
-                try {
-                    const response = await apiFetch.post<{ message: string, data: { token: string, user: any } }>('/auth/login', credentials.value);
-                    
-                    if (response && response.data && response.data.token) {
-                        localStorage.setItem('token', response.data.token);
-                        localStorage.setItem('user', JSON.stringify(response.data.user));
-                        router.push({ name: 'dashboard' });
-                    } else {
-                        errorMessage.value = "Échec de l'authentification: Aucun token reçu";
-                    }
-                } catch (error: any) {
-                    console.error('Login failed', error);
-                    errorMessage.value = error.message;
-                } finally {
-                    loading.value = false;
-                }
-            };
+import { defineComponent, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/useUserStore';
+
+export default defineComponent({
+    setup() {
+        const router = useRouter();
+        const userStore = useUserStore();
         
-            return {
-                credentials,
-                loading,
-                errorMessage,
-                login
-            };
-        }
-    });
+        const credentials = ref({
+            email: '',
+            password: '',
+        });
+
+        const login = async () => {
+            const success = await userStore.login(credentials.value);
+            
+            if (success) {
+                router.push({ name: 'dashboard' });
+            }
+        };
+    
+        return {
+            credentials,
+            userStore,
+            login
+        };
+    }
+});
 </script>
 
 <style scoped>

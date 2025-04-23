@@ -1,6 +1,5 @@
 <template>
     <div class="min-h-screen flex items-center justify-center overflow-hidden relative">
-        <!-- Fond et animations cosmiques (inchangés) -->
         <div class="fixed inset-0" style="background: radial-gradient(circle at 50% 50%, #0f172a 0%, #000 100%)">
             <div 
                 class="absolute inset-0"
@@ -51,17 +50,14 @@
                     </p>
                 </div>
                 
-                <!-- Section des erreurs - Affichage amélioré avec des cartes individuelles -->
                 <div v-if="validationErrors.length > 0" class="mb-6 space-y-2">
                     <div v-for="(error, index) in validationErrors" :key="index" 
                         class="flex items-start p-3 bg-red-900/40 border border-red-800/70 rounded-lg text-sm backdrop-blur-sm animate-fadeIn">
-                        <!-- Icône d'erreur -->
                         <div class="flex-shrink-0 mr-2 mt-0.5">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                             </svg>
                         </div>
-                        <!-- Message d'erreur -->
                         <div class="text-red-300 flex-1">{{ error }}</div>
                     </div>
                 </div>
@@ -253,7 +249,7 @@
 <script lang="ts">
     import { defineComponent, ref } from 'vue';
     import { useRouter } from 'vue-router';
-    import apiFetch from './../../utils/apiFetch';
+    import apiFetch from '@/utils/apiFetch';
 
     export default defineComponent({
         name: 'Register',

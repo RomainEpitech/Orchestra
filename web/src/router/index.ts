@@ -13,6 +13,7 @@ import AddCollaborator from '@/components/modules/personnel/AddCollaborator.vue'
 import RolesList from '@/components/modules/roles/RolesList.vue';
 import EditCollaborator from '@/components/modules/personnel/EditCollaborator.vue';
 import EditRole from '@/components/modules/roles/EditRole.vue';
+import { useUserStore } from '@/store/useUserStore';
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -83,19 +84,19 @@ const routes: RouteRecordRaw[] = [
                 path: 'collaborateurs',
                 name: 'collaborators',
                 component: CollaboratorsList,
-                meta: { requiresAuth: true }
+                meta: { requiresAuth: true, module: 'personnel', permission: 'read' }
             },
             {
                 path: 'collaborateurs/ajouter',
                 name: 'collaboratorsNewLicense',
                 component: AddCollaborator,
-                meta: { requiresAuth: true }
+                meta: { requiresAuth: true, module: 'personnel', permission: 'create' }
             },
             {
                 path: 'collaborateurs/modifier/:uuid',
                 name: 'collaboratorsEdit',
                 component: EditCollaborator,
-                meta: { requiresAuth: true }
+                meta: { requiresAuth: true, module: 'personnel', permission: 'update' }
             },
             // Module Roles
             {
@@ -127,35 +128,25 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-    const hasToken = !!localStorage.getItem('token');
+    const userStore = useUserStore();
     
-    if (requiresAuth && !hasToken) {
+    // Vérifier si l'utilisateur est authentifié
+    if (requiresAuth && !userStore.isAuthenticated) {
         return next({ name: 'login' });
     }
     
-    if (to.path === '/login' && hasToken) {
+    // Rediriger vers le dashboard si l'utilisateur est déjà connecté et essaie d'accéder à la page de login
+    if (to.path === '/login' && userStore.isAuthenticated) {
         return next({ name: 'dashboard' });
     }
     
-    if (requiresAuth && hasToken && to.meta.module && to.meta.permission) {
-        const module = to.meta.module;
-        const requiredPermission = to.meta.permission;
+    // Vérifier les autorisations pour les routes protégées
+    if (requiresAuth && userStore.isAuthenticated && to.meta.module && to.meta.permission) {
+        const module = to.meta.module as string;
+        const requiredPermission = to.meta.permission as string;
         
-        try {
-            const userString = localStorage.getItem('user');
-            if (!userString) {
-                return next({ name: 'unauthorized' });
-            }
-            
-            const userData = JSON.parse(userString);
-            const authority = userData.role?.authority || {};
-            
-            if (!authority[module] || !authority[module][requiredPermission]) {
-                console.warn(`Accès refusé: ${module}.${requiredPermission} requis`);
-                return next({ name: 'unauthorized' });
-            }
-        } catch (error) {
-            console.error('Erreur lors de la vérification des permissions:', error);
+        if (!userStore.hasRoleAuthority(module, requiredPermission)) {
+            console.warn(`Accès refusé: ${module}.${requiredPermission} requis`);
             return next({ name: 'unauthorized' });
         }
     }
